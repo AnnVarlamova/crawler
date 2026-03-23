@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite3
+
+__pycache__
+git rm -r --cached data
+# Virtual env
+.venv/
+venv/
+env/
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (ВАЖНО — не коммитим скачанные данные)
+data/
+
+# Playwright
+playwright/.cache/
+
+# temp
+tmp/
