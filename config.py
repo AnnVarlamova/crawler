@@ -14,33 +14,34 @@ CANDIDATES_JSONL = JSONL_DIR / "candidates.jsonl"
 
 HEADLESS = True
 
-# Safe crawler defaults
-MAX_CONCURRENCY = 3
-MAX_PAGES_PER_SITE = 180
-MAX_DEPTH = 3
+# 🚀 Чуть ускоряем, но не ломаем сайты
+MAX_CONCURRENCY = 4
+MAX_PAGES_PER_SITE = 250
+MAX_DEPTH = 4
 
 NAV_TIMEOUT_MS = 45000
-WAIT_AFTER_LOAD_MS = 1400
+WAIT_AFTER_LOAD_MS = 900
 REQUEST_TIMEOUT_SEC = 45
 
-# Base polite delay; real delay uses jitter on top
-RESPECT_DELAY_SEC = 2.5
-RESPECT_JITTER_MIN = 0.5
-RESPECT_JITTER_MAX = 1.5
+# ⏱️ мягкий delay
+RESPECT_DELAY_SEC = 1.2
+RESPECT_JITTER_MIN = 0.3
+RESPECT_JITTER_MAX = 0.9
 
 DOWNLOAD_IMAGES = True
 DOWNLOAD_FILES = True
 SAVE_HTML = True
 SAVE_TEXT = True
 
-# Abort heavy resources inside Playwright to reduce load
+# ⚡ ускорение Playwright
 BLOCK_BROWSER_IMAGES = True
 BLOCK_BROWSER_FONTS = True
 BLOCK_BROWSER_MEDIA = True
-BLOCK_BROWSER_STYLESHEETS = False
+BLOCK_BROWSER_STYLESHEETS = True
 
 USE_ROBOTS_TXT = False
 
+# 🌐 домены (оставляем как есть, но можно потом чистить)
 ALLOWED_DOMAINS = {
     "simplicity.com", "www.simplicity.com",
     "vikisews.com",
@@ -51,34 +52,48 @@ ALLOWED_DOMAINS = {
     "korfiati.ru",
     "etsy.com", "www.etsy.com",
     "thefoldline.com", "www.thefoldline.com",
-    "lekala.co",
+    "lekala.co", "www.lekala.co",
     "sewist.com", "www.sewist.com",
-    "marfy.it",
-    "bootstrapfashion.com",
+    "marfy.it", "www.marfy.it",
+    "bootstrapfashion.com", "patterns.bootstrapfashion.com",
     "tianascloset.com",
     "burdastyle.ru",
-    "tessuti-shop.com",
-    "stylearc.com",
-    "moodfabrics.com",
+    "tessuti-shop.com", "www.tessuti-shop.com",
+    "stylearc.com", "www.stylearc.com",
 }
 
-SEED_URLS = [
-    "https://www.thecuttingclass.com/",
-    "https://blog.pattern-vault.com/",
-    "https://vikisews.com/vykrojki/dresses/",
-    "https://grasser.ru/vykrojki/",
-    "https://sewist.com/",
-    "https://bootstrapfashion.com/",
-    "https://moodfabrics.com/collections/free-sewing-patterns",
-    "https://tessuti-shop.com/collections/patterns",
-    "https://stylearc.com/shop/",
-    "https://marfy.it/en/product-category/sewing-patterns/",
-    "https://thefoldline.com/collections/sewing-patterns",
-    "https://lekala.co/catalog",
-    "https://korfiati.ru/",
-    "https://shkatulka-sew.ru/",
-    "https://burdastyle.ru/vikroyki/",
-    "https://tianascloset.com/",
-    "https://www.etsy.com/",
-    "https://www.simplicity.com/",
+# 🔥 НОВЫЙ БАЗОВЫЙ ВХОД
+ENTRY_POINTS = [
+    # Korfiati
+    "https://korfiati.ru/vyikroyki-odezhdyi/vyikroyki-zhenskoy-odezhdyi/",
+    "https://korfiati.ru/vyikroyki-odezhdyi/vyikroyki-iz-trikotaga/",
+    "https://korfiati.ru/vyikroyki-odezhdyi/vyikroyki-muzhskoy-odezhdyi/",
+
+    # The Fold Line
+    "https://thefoldline.com/collections/womens-sewing-patterns",
+    "https://thefoldline.com/collections/mens-sewing-patterns",
+
+    # Lekala
+    "https://www.lekala.co/catalog/women",
+    "https://www.lekala.co/catalog/men",
+
+    # Bootstrap
+    "https://patterns.bootstrapfashion.com/exclusive-designer-sewing-patterns.html?limit=all",
+
+    # Tiana
+    "https://tianascloset.com/index.php/product-category/womens-collection/",
+    "https://tianascloset.com/index.php/product-category/mens-collection/",
+
+    # Burda
+    "https://burdastyle.ru/vikroyki/dlya-zhenshhin/",
+    "https://burdastyle.ru/vikroyki/dlya-muzhchin/",
+
+    # StyleArc
+    "https://www.stylearc.com/shop-category/sewing-patterns/",
+
+    # Pattern Vault
+    "https://blog.pattern-vault.com/free-designer-patterns/"
 ]
+
+# ❗ Старые seed убираем полностью
+SEED_URLS = ENTRY_POINTS
