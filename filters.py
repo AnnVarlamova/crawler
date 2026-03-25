@@ -153,20 +153,22 @@ def classify_page(
 
     page_type = detect_page_type(url, blob, has_price, has_product_schema)
 
+    relevant = not is_child
+
     if adapter_name in {"patternvault", "thecuttingclass"}:
-        keep = not is_child and not is_accessory
+        download = not is_child and not is_accessory
         entity_type = "analysis" if adapter_name == "thecuttingclass" else "collection_entry"
     elif page_type == "generator":
-        keep = garment_hit and not is_child and not is_accessory
+        download = garment_hit and not is_child and not is_accessory
         entity_type = "pattern"
     elif page_type == "product":
-        keep = (garment_hit or has_any(blob, PATTERN_HINTS)) and not is_child and not is_accessory and image_count > 0
+        download = (garment_hit or has_any(blob, PATTERN_HINTS)) and not is_child and not is_accessory and image_count > 0
         entity_type = "pattern"
     elif page_type == "category":
-        keep = garment_hit and not is_child and not is_accessory and image_count > 0
+        download = garment_hit and not is_child and not is_accessory and image_count > 0
         entity_type = "garment"
     else:
-        keep = garment_hit and not is_child and not is_accessory and (image_count > 0 or file_count > 0)
+        download = garment_hit and not is_child and not is_accessory and (image_count > 0 or file_count > 0)
         entity_type = "garment"
 
     return {
@@ -175,7 +177,8 @@ def classify_page(
         "style_keywords": style_keywords,
         "is_child_related": is_child,
         "is_accessory_related": is_accessory,
-        "keep": keep,
+        "relevant": relevant,
+        "download": download,
         "page_type": page_type,
         "entity_type": entity_type,
     }

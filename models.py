@@ -35,7 +35,8 @@ class ParsedPage:
 
     is_child_related: bool = False
     is_accessory_related: bool = False
-    keep: bool = False
+    relevant: bool = False
+    download: bool = False
 
     designer: str = ""
     collection: str = ""
