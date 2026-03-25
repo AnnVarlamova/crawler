@@ -2,6 +2,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
+SITES_DIR = DATA_DIR / "sites"
 RAW_HTML_DIR = DATA_DIR / "raw_html"
 TEXT_DIR = DATA_DIR / "text"
 IMAGES_DIR = DATA_DIR / "images"

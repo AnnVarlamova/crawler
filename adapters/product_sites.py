@@ -1,4 +1,5 @@
 import re
+from urllib.parse import urljoin
 from .base import BaseAdapter
 from utils import text_norm
 
@@ -90,3 +91,25 @@ class SimpleProductAdapter(BaseAdapter):
 
     def match(self, domain: str) -> bool:
         return domain == self.domain_name
+
+
+class KorfiatiAdapter(BaseAdapter):
+    name = "korfiati"
+
+    def match(self, domain: str) -> bool:
+        return domain == "korfiati.ru"
+
+    def extract_file_links(self, soup, base_url):
+        out = super().extract_file_links(soup, base_url)
+        for a in soup.select("a[href]"):
+            href = a.get("href")
+            if not href:
+                continue
+            low = href.lower()
+            text = text_norm(a.get_text(" ", strip=True)).lower()
+            if any(
+                marker in low or marker in text
+                for marker in ["gotovaya-vykrojka", "скачать выкройку", "выкройка pdf", "ready-made-patterns"]
+            ):
+                out.append(urljoin(base_url, href))
+        return list(dict.fromkeys(out))

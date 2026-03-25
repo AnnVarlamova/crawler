@@ -87,6 +87,10 @@ ARTICLE_URL_HINTS = {
 }
 
 GENERATOR_HINTS = {"generator", "custom pattern", "made-to-measure", "3d preview"}
+PATTERN_BLOB_HINTS = {
+    "выкройка", "выкройки", "готовая выкройка", "лекало", "лекала",
+    "sewing pattern", "pattern pdf", "digital pattern", "download pattern",
+}
 
 
 def find_labels(blob: str, mapping: dict[str, list[str]]) -> list[str]:
@@ -108,6 +112,10 @@ def detect_page_type(url: str, blob: str, has_price: bool, has_product_schema: b
     bl = text_low(blob)
 
     if has_product_schema or has_price or any(x in ul for x in PRODUCT_URL_HINTS):
+        return "product"
+    if any(x in bl for x in PATTERN_BLOB_HINTS) and any(k in bl for k in GARMENT_KEYWORDS):
+        return "product"
+    if "/20" in ul and "korfiati.ru" in ul and "vykroj" in ul:
         return "product"
     if any(x in ul for x in ARTICLE_URL_HINTS):
         return "article"
@@ -152,7 +160,7 @@ def classify_page(
         keep = garment_hit and not is_child and not is_accessory
         entity_type = "pattern"
     elif page_type == "product":
-        keep = garment_hit and not is_child and not is_accessory
+        keep = (garment_hit or has_any(blob, PATTERN_HINTS)) and not is_child and not is_accessory and image_count > 0
         entity_type = "pattern"
     elif page_type == "category":
         keep = garment_hit and not is_child and not is_accessory and image_count > 0
