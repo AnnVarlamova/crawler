@@ -127,7 +127,8 @@ async def parse_page(
         style_keywords=cls["style_keywords"],
         is_child_related=cls["is_child_related"],
         is_accessory_related=cls["is_accessory_related"],
-        keep=cls["keep"],
+        relevant=cls["relevant"],
+        download=cls["download"],
         designer=custom["designer"],
         collection=custom["collection"],
         season=custom["season"],
@@ -155,7 +156,7 @@ async def parse_page(
         timeout=REQUEST_TIMEOUT_SEC,
         follow_redirects=True,
     ) as client:
-        if page.keep and download_images:
+        if page.download and download_images:
             for idx, img_url in enumerate(page.assets.image_urls[:40]):
                 ext = Path(urlparse(img_url).path).suffix.lower() or ".jpg"
                 dest = pattern_dir / "images" / f"{idx:03d}{ext}"
@@ -163,7 +164,7 @@ async def parse_page(
                 if saved:
                     page.assets.downloaded_images.append(saved)
 
-        if page.keep and download_files:
+        if page.download and download_files:
             for idx, file_url in enumerate(page.assets.file_urls[:20]):
                 ext = Path(urlparse(file_url).path).suffix.lower() or ".bin"
                 dest = pattern_dir / "files" / f"{idx:03d}{ext}"

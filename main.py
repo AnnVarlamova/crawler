@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import random
 from collections import defaultdict
 from dataclasses import asdict
@@ -99,12 +100,13 @@ class CrawlState:
         self.visited = set()
         self.enqueued = set()
         self.site_counts: dict[str, int] = {}
-        self.queue: asyncio.Queue[tuple[str, int]] = asyncio.Queue()
+        self.queue: asyncio.PriorityQueue[tuple[int, int, int, str]] = asyncio.PriorityQueue()
+        self._counter = itertools.count()
 
         # One in-flight page per domain
         self.domain_locks: dict[str, asyncio.Semaphore] = defaultdict(lambda: asyncio.Semaphore(1))
 
-    async def enqueue(self, url: str, depth: int = 0):
+    async def enqueue(self, url: str, depth: int = 0, seed_priority: int = 0):
         url = normalize_url(url)
         if depth > MAX_DEPTH:
             return
@@ -117,7 +119,8 @@ class CrawlState:
         if self.site_counts.get(domain_of(url), 0) >= MAX_PAGES_PER_SITE:
             return
         self.enqueued.add(url)
-        await self.queue.put((url, depth))
+        order = next(self._counter)
+        await self.queue.put((seed_priority, depth, order, url))
 
 
 async def polite_sleep():
@@ -136,7 +139,17 @@ async def fetch_rendered_html(page, url: str):
     await page.goto(url, wait_until="domcontentloaded", timeout=NAV_TIMEOUT_MS)
     await page.wait_for_timeout(WAIT_AFTER_LOAD_MS)
     await gentle_scroll(page)
-    await page.wait_for_timeout(600)
+    for attempt in range(3):
+        try:
+            await page.wait_for_load_state("networkidle", timeout=4000)
+        except Exception:
+            pass
+        await page.wait_for_timeout(500 + attempt * 300)
+        try:
+            return await page.content(), page.url
+        except Exception as e:
+            if "page is navigating" not in str(e).lower() or attempt == 2:
+                raise
     return await page.content(), page.url
 
 
@@ -177,7 +190,7 @@ async def worker(state: CrawlState, context, robots: RobotsCache, worker_id: int
 
     while True:
         try:
-            url, depth = await state.queue.get()
+            seed_priority, depth, _, url = await state.queue.get()
             try:
                 d = domain_of(url)
                 if depth > MAX_DEPTH:
@@ -209,7 +222,7 @@ async def worker(state: CrawlState, context, robots: RobotsCache, worker_id: int
                     await append_jsonl(ITEMS_JSONL, asdict(item))
 
                     high_value = (
-                        item.keep and
+                        item.download and
                         len(item.assets.image_urls) > 0 and
                         (
                             len(item.assets.file_urls) > 0
@@ -220,14 +233,15 @@ async def worker(state: CrawlState, context, robots: RobotsCache, worker_id: int
                     if high_value:
                         await append_jsonl(CANDIDATES_JSONL, asdict(item))
 
-                    for link in item.discovered_links:
-                        if should_follow(link):
-                            await state.enqueue(link, depth + 1)
+                    if item.relevant:
+                        for link in item.discovered_links:
+                            if should_follow(link):
+                                await state.enqueue(link, depth + 1, seed_priority=seed_priority)
 
                     print(
                         f"[ok] worker={worker_id} domain={d} depth={depth} "
                         f"adapter={item.source_adapter} page_type={item.page_type} "
-                        f"keep={item.keep} url={item.final_url}"
+                        f"relevant={item.relevant} download={item.download} url={item.final_url}"
                     )
 
             finally:
@@ -243,8 +257,8 @@ async def main():
     ensure_dirs([DATA_DIR, SITES_DIR, RAW_HTML_DIR, TEXT_DIR, IMAGES_DIR, FILES_DIR, JSONL_DIR, STATE_DIR])
 
     state = CrawlState()
-    for url in SEED_URLS:
-        await state.enqueue(url, 0)
+    for idx, url in enumerate(SEED_URLS):
+        await state.enqueue(url, 0, seed_priority=idx)
 
     robots = RobotsCache(enabled=USE_ROBOTS_TXT)
 
