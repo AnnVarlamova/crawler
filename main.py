@@ -23,6 +23,7 @@ from config import (
     ITEMS_JSONL,
     CANDIDATES_JSONL,
     DATA_DIR,
+    SITES_DIR,
     RAW_HTML_DIR,
     TEXT_DIR,
     IMAGES_DIR,
@@ -239,7 +240,7 @@ async def worker(state: CrawlState, context, robots: RobotsCache, worker_id: int
 
 
 async def main():
-    ensure_dirs([DATA_DIR, RAW_HTML_DIR, TEXT_DIR, IMAGES_DIR, FILES_DIR, JSONL_DIR, STATE_DIR])
+    ensure_dirs([DATA_DIR, SITES_DIR, RAW_HTML_DIR, TEXT_DIR, IMAGES_DIR, FILES_DIR, JSONL_DIR, STATE_DIR])
 
     state = CrawlState()
     for url in SEED_URLS:

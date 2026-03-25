@@ -1,5 +1,5 @@
 from adapters.analysis_sites import CuttingClassAdapter, PatternVaultAdapter
-from adapters.product_sites import VikisewsAdapter, GrasserAdapter, SimpleProductAdapter
+from adapters.product_sites import VikisewsAdapter, GrasserAdapter, SimpleProductAdapter, KorfiatiAdapter
 from adapters.generator_sites import SewistAdapter, BootstrapFashionAdapter
 from adapters.generic import GenericAdapter
 
@@ -9,6 +9,7 @@ ADAPTERS = [
     PatternVaultAdapter(),
     VikisewsAdapter(),
     GrasserAdapter(),
+    KorfiatiAdapter(),
     SewistAdapter(),
     BootstrapFashionAdapter(),
 
@@ -23,7 +24,6 @@ ADAPTERS = [
     SimpleProductAdapter("lekala.co", "lekala"),
     SimpleProductAdapter("tianascloset.com", "tiana"),
     SimpleProductAdapter("burdastyle.ru", "burda"),
-    SimpleProductAdapter("korfiati.ru", "korfiati"),
     SimpleProductAdapter("shkatulka-sew.ru", "shkatulka"),
     SimpleProductAdapter("etsy.com", "etsy"),
     SimpleProductAdapter("www.etsy.com", "etsy"),

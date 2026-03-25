@@ -18,3 +18,9 @@ async def append_jsonl(path: Path, obj: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     async with aiofiles.open(path, "ab") as f:
         await f.write(orjson.dumps(obj) + b"\n")
+
+
+async def save_json(path: Path, obj: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    async with aiofiles.open(path, "wb") as f:
+        await f.write(orjson.dumps(obj, option=orjson.OPT_INDENT_2))

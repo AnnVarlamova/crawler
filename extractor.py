@@ -1,16 +1,17 @@
 import time
 from pathlib import Path
 from urllib.parse import urlparse
+from dataclasses import asdict
 
 import httpx
 from bs4 import BeautifulSoup
 
-from config import REQUEST_TIMEOUT_SEC, RAW_HTML_DIR, TEXT_DIR, IMAGES_DIR, FILES_DIR
+from config import REQUEST_TIMEOUT_SEC, RAW_HTML_DIR, TEXT_DIR, SITES_DIR
 from filters import classify_page
 from jsonld import extract_json_ld, find_product_schema, extract_images_from_product_schema, extract_price_from_product_schema
 from models import ParsedPage
 from site_registry import get_adapter
-from storage import save_text
+from storage import save_text, save_json
 from utils import (
     unique_keep_order,
     url_hash,
@@ -101,6 +102,11 @@ async def parse_page(
         product_code=custom.get("product_code", ""),
         h1=h1,
     )
+    pattern_dir = SITES_DIR / domain_key(domain) / signature
+    pattern_html_path = pattern_dir / "source.html"
+    pattern_text_path = pattern_dir / "description.txt"
+    await save_text(pattern_html_path, html)
+    await save_text(pattern_text_path, text)
 
     page = ParsedPage(
         url=original_url,
@@ -134,8 +140,8 @@ async def parse_page(
         fabric_recommendations=custom["fabric_recommendations"],
         construction_notes=custom["construction_notes"] + [f"signature:{signature}"],
         json_ld_raw=json_ld_nodes,
-        html_path=str(html_path),
-        text_path=str(text_path),
+        html_path=str(pattern_html_path),
+        text_path=str(pattern_text_path),
         discovered_links=discovered_links,
         timestamp_utc=time.time(),
     )
@@ -152,7 +158,7 @@ async def parse_page(
         if page.keep and download_images:
             for idx, img_url in enumerate(page.assets.image_urls[:40]):
                 ext = Path(urlparse(img_url).path).suffix.lower() or ".jpg"
-                dest = IMAGES_DIR / domain_key(domain) / f"{signature}_{idx:03d}{ext}"
+                dest = pattern_dir / "images" / f"{idx:03d}{ext}"
                 saved = await download_binary(img_url, dest, client)
                 if saved:
                     page.assets.downloaded_images.append(saved)
@@ -160,9 +166,11 @@ async def parse_page(
         if page.keep and download_files:
             for idx, file_url in enumerate(page.assets.file_urls[:20]):
                 ext = Path(urlparse(file_url).path).suffix.lower() or ".bin"
-                dest = FILES_DIR / domain_key(domain) / f"{signature}_{idx:03d}{ext}"
+                dest = pattern_dir / "files" / f"{idx:03d}{ext}"
                 saved = await download_binary(file_url, dest, client)
                 if saved:
                     page.assets.downloaded_files.append(saved)
+
+    await save_json(pattern_dir / "meta.json", asdict(page))
 
     return page
