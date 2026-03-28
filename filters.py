@@ -91,6 +91,11 @@ PATTERN_BLOB_HINTS = {
     "выкройка", "выкройки", "готовая выкройка", "лекало", "лекала",
     "sewing pattern", "pattern pdf", "digital pattern", "download pattern",
 }
+ADULT_TERMS = {
+    "women", "woman", "womens", "womenswear", "female",
+    "men", "man", "mens", "menswear", "male",
+    "жен", "женский", "для женщин", "муж", "мужской", "для мужчин",
+}
 
 
 def find_labels(blob: str, mapping: dict[str, list[str]]) -> list[str]:
@@ -111,7 +116,16 @@ def detect_page_type(url: str, blob: str, has_price: bool, has_product_schema: b
     ul = url.lower()
     bl = text_low(blob)
 
-    if has_product_schema or has_price or any(x in ul for x in PRODUCT_URL_HINTS):
+    is_category_url = any(x in ul for x in CATEGORY_URL_HINTS)
+    has_explicit_product_url = any(x in ul for x in {"/product/", "/products/"})
+
+    if has_product_schema:
+        return "product"
+    if is_category_url and not has_explicit_product_url:
+        return "category"
+    if has_explicit_product_url:
+        return "product"
+    if has_price and any(x in ul for x in PRODUCT_URL_HINTS):
         return "product"
     if any(x in bl for x in PATTERN_BLOB_HINTS) and any(k in bl for k in GARMENT_KEYWORDS):
         return "product"
@@ -121,7 +135,7 @@ def detect_page_type(url: str, blob: str, has_price: bool, has_product_schema: b
         return "article"
     if any(x in bl for x in GENERATOR_HINTS) or "sewist.com" in ul or "bootstrapfashion.com" in ul:
         return "generator"
-    if any(x in ul for x in CATEGORY_URL_HINTS):
+    if is_category_url:
         return "category"
     return "unknown"
 
@@ -153,7 +167,12 @@ def classify_page(
 
     page_type = detect_page_type(url, blob, has_price, has_product_schema)
 
-    relevant = not is_child
+    pattern_hit = has_any(blob, PATTERN_HINTS) or "vykroj" in text_low(url) or "vikroj" in text_low(url)
+    adult_hit = has_any(blob, ADULT_TERMS) or bool(gender)
+    child_only_context = is_child and not adult_hit
+    bridge_page = page_type in {"category", "unknown", "article"}
+
+    relevant = (not is_accessory) and (not child_only_context) and (garment_hit or pattern_hit or bridge_page)
 
     if adapter_name in {"patternvault", "thecuttingclass"}:
         download = not is_child and not is_accessory
@@ -165,7 +184,8 @@ def classify_page(
         download = (garment_hit or has_any(blob, PATTERN_HINTS)) and not is_child and not is_accessory and image_count > 0
         entity_type = "pattern"
     elif page_type == "category":
-        download = garment_hit and not is_child and not is_accessory and image_count > 0
+        # category/listing pages are useful for discovery but should not be downloaded as final assets
+        download = False
         entity_type = "garment"
     else:
         download = garment_hit and not is_child and not is_accessory and (image_count > 0 or file_count > 0)

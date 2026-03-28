@@ -186,7 +186,11 @@ async def install_safe_routing(context):
 
 
 async def worker(state: CrawlState, context, robots: RobotsCache, worker_id: int):
-    page = await context.new_page()
+    try:
+        page = await context.new_page()
+    except Exception as e:
+        print(f"[worker-init-error] worker={worker_id} error={e}", flush=True)
+        return
 
     while True:
         try:
@@ -198,7 +202,7 @@ async def worker(state: CrawlState, context, robots: RobotsCache, worker_id: int
                 if state.site_counts.get(d, 0) >= MAX_PAGES_PER_SITE:
                     continue
                 if not await robots.allowed(url):
-                    print(f"[robots-skip] {url}")
+                    print(f"[robots-skip] {url}", flush=True)
                     continue
 
                 lock = state.domain_locks[d]
@@ -212,10 +216,10 @@ async def worker(state: CrawlState, context, robots: RobotsCache, worker_id: int
                     try:
                         html, final_url = await fetch_rendered_html(page, url)
                     except PlaywrightTimeout:
-                        print(f"[timeout] {url}")
+                        print(f"[timeout] {url}", flush=True)
                         continue
                     except Exception as e:
-                        print(f"[nav-error] {url} -> {e}")
+                        print(f"[nav-error] {url} -> {e}", flush=True)
                         continue
 
                     item = await parse_page(url, final_url, html)
@@ -242,6 +246,8 @@ async def worker(state: CrawlState, context, robots: RobotsCache, worker_id: int
                         f"[ok] worker={worker_id} domain={d} depth={depth} "
                         f"adapter={item.source_adapter} page_type={item.page_type} "
                         f"relevant={item.relevant} download={item.download} url={item.final_url}"
+                        ,
+                        flush=True,
                     )
 
             finally:
@@ -259,6 +265,11 @@ async def main():
     state = CrawlState()
     for idx, url in enumerate(SEED_URLS):
         await state.enqueue(url, 0, seed_priority=idx)
+    print(
+        f"[start] seeds={len(SEED_URLS)} enqueued={state.queue.qsize()} "
+        f"workers={MAX_CONCURRENCY} max_depth={MAX_DEPTH}",
+        flush=True,
+    )
 
     robots = RobotsCache(enabled=USE_ROBOTS_TXT)
 
@@ -278,7 +289,23 @@ async def main():
         await install_safe_routing(context)
 
         workers = [asyncio.create_task(worker(state, context, robots, i)) for i in range(MAX_CONCURRENCY)]
-        await state.queue.join()
+
+        join_task = asyncio.create_task(state.queue.join())
+        done, _ = await asyncio.wait([join_task, *workers], return_when=asyncio.FIRST_COMPLETED)
+
+        # Queue drained normally.
+        if join_task in done:
+            pass
+        else:
+            # At least one worker terminated unexpectedly while queue still has work.
+            for w in workers:
+                if w.done() and not w.cancelled():
+                    exc = w.exception()
+                    if exc:
+                        print(f"[worker-crash] {exc}", flush=True)
+            if not join_task.done():
+                join_task.cancel()
+            raise RuntimeError("Workers terminated before crawl queue was fully processed")
 
         for w in workers:
             w.cancel()
