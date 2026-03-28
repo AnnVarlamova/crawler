@@ -48,7 +48,11 @@ async def parse_page(
 ):
     domain = urlparse(final_url).netloc.lower()
     adapter = get_adapter(domain)
-    soup = BeautifulSoup(html, "lxml")
+    try:
+        soup = BeautifulSoup(html, "lxml")
+    except Exception:
+        # Fallback for environments where lxml is not installed.
+        soup = BeautifulSoup(html, "html.parser")
 
     title, meta_description = adapter.extract_title_meta(soup)
     h1 = adapter.extract_h1(soup)
