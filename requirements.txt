@@ -1,0 +1,5 @@
+browser-use>=0.1.40
+langchain-openai>=0.2.0
+python-dotenv>=1.0.1
+pydantic>=2.8.2
+requests>=2.32.3
