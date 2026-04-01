@@ -1,7 +1,0 @@
-{
-  "categories": ["dress", "shirt", "blouse", "trousers", "pants", "jeans", "skirt", "jacket", "coat", "vest", "hoodie", "sweater", "cardigan", "jumpsuit", "shorts", "t-shirt", "top", "suit", "outerwear"],
-  "styles": ["casual", "formal", "business", "smart-casual", "sport", "minimalist", "classic", "romantic", "streetwear", "oversize", "slim-fit", "relaxed-fit", "tailored"],
-  "seasons": ["spring", "summer", "autumn", "winter", "all-season"],
-  "details": ["collar", "v-neck", "crew-neck", "lapel", "buttoned", "zipper", "pleats", "darts", "pockets", "ruffles", "belt", "lining", "long-sleeve", "short-sleeve", "sleeveless", "midi", "maxi", "mini"],
-  "audience": ["womenswear", "menswear"]
-}
