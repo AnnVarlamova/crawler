@@ -328,10 +328,22 @@ def build_browser() -> Browser:
         headless=True,
         channel="chromium",
         user_data_dir=profile_dir,
-        allowed_domains=ALLOWED_DOMAINS,
         enable_default_extensions=False,
     )
 
+def is_allowed_product_url(url: str) -> bool:
+    host = urlparse(url).netloc.lower().replace("www.", "")
+    allowed_hosts = {
+        "simplicity.com",
+        "vikisews.com",
+        "burdastyle.ru",
+        "helpersew.com",
+        "grasser.ru",
+        "shkatulka-sew.ru",
+        "korfiati.ru",
+        "marfy.it",
+    }
+    return any(host == d or host.endswith("." + d) for d in allowed_hosts)
 
 def make_discovery_prompt(start_url: str, limit: int) -> str:
     return f"""
@@ -418,7 +430,9 @@ async def discover_urls_for_site(start_url: str, limit: int) -> list[str]:
         data = get_structured_output(result)
         if not data:
             return []
-        return dedupe_preserve_order(data.listing_urls)[:limit]
+        urls = dedupe_preserve_order(data.listing_urls)
+        urls = [u for u in urls if is_allowed_product_url(u)]
+        return urls[:limit]
     finally:
         maybe_close = getattr(browser, "close", None)
         if callable(maybe_close):
