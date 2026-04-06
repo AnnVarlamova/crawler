@@ -3,7 +3,6 @@ from __future__ import annotations
 from app.config import (
     DISCOVERED_FILE,
     DOWNLOADED_IMAGES_FILE,
-    IN_PROGRESS_FILE,
     PROCESSED_FILE,
     SAVED_ITEMS_FILE,
     STATE_DIR,
@@ -19,5 +18,5 @@ def load_state() -> State:
         processed_urls=read_jsonl_keyset(PROCESSED_FILE, "url"),
         saved_item_ids=read_jsonl_keyset(SAVED_ITEMS_FILE, "item_id"),
         downloaded_image_urls=read_jsonl_keyset(DOWNLOADED_IMAGES_FILE, "url"),
-        in_progress_urls=read_jsonl_keyset(IN_PROGRESS_FILE, "url"),
+        in_progress_urls=set(),
     )

@@ -13,7 +13,6 @@ from app.config import (
     DEFAULT_MAX_IMAGES,
     DISCOVERED_FILE,
     ERRORS_FILE,
-    IN_PROGRESS_FILE,
     ITEMS_DIR,
     PROCESSED_FILE,
     SAVED_ITEMS_FILE,
@@ -103,7 +102,6 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
         if url in state.processed_urls or url in state.in_progress_urls:
             return
         state.in_progress_urls.add(url)
-        append_jsonl(IN_PROGRESS_FILE, {"url": url})
 
     try:
         print(f"[PROCESS] {url}", flush=True)
