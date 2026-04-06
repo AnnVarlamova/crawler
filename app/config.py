@@ -42,7 +42,38 @@ ALLOWED_DOMAINS = [
 
 DATA_DIR = Path("data")
 STATE_DIR = DATA_DIR / "_state"
-ITEMS_DIR = DATA_DIR / "items"
+
+
+# =========================
+# DATASET PATH (REQUIRED)
+# =========================
+
+ITEMS_DIR_ENV = os.getenv("ITEMS_DIR")
+
+if not ITEMS_DIR_ENV:
+    raise RuntimeError(
+        "ITEMS_DIR is not set.\n"
+        "Please set environment variable ITEMS_DIR to your dataset path.\n"
+        "Example:\n"
+        "  Windows (PowerShell):\n"
+        "    $env:ITEMS_DIR=\"D:\\Yandex.Disk\\pics\"\n"
+        "  or in .env:\n"
+        "    ITEMS_DIR=D:\\Yandex.Disk\\pics"
+    )
+
+ITEMS_DIR = Path(ITEMS_DIR_ENV)
+
+if not ITEMS_DIR.exists():
+    raise RuntimeError(
+        f"ITEMS_DIR does not exist: {ITEMS_DIR}\n"
+        "Please create this directory before running the script."
+    )
+
+if not ITEMS_DIR.is_dir():
+    raise RuntimeError(
+        f"ITEMS_DIR is not a directory: {ITEMS_DIR}"
+    )
+
 
 DISCOVERED_FILE = STATE_DIR / "discovered_urls.jsonl"
 PROCESSED_FILE = STATE_DIR / "processed_urls.jsonl"
