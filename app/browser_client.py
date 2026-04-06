@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import atexit
+import logging
 import os
 import shutil
 import tempfile
@@ -15,6 +16,7 @@ from app.models import GeneratedTags, ListingLinks, ProductCard
 from app.prompts import make_discovery_prompt, make_product_prompt, make_tags_prompt
 from app.utils import dedupe_preserve_order, get_structured_output, is_allowed_product_url
 
+logger = logging.getLogger(__name__)
 
 _TEMP_BROWSER_DIRS: list[str] = []
 
@@ -46,6 +48,8 @@ def build_browser() -> Browser:
     profile_dir = tempfile.mkdtemp(prefix="browseruse_profile_")
     _TEMP_BROWSER_DIRS.append(profile_dir)
 
+    logger.debug("Created browser profile dir: %s", profile_dir)
+
     return Browser(
         headless=True,
         channel="chromium",
@@ -65,6 +69,7 @@ async def _close_browser(browser: Browser) -> None:
 async def discover_urls_for_site(start_url: str, limit: int) -> list[str]:
     browser = build_browser()
     try:
+        logger.info("Discovering urls: start_url=%s limit=%s", start_url, limit)
         agent = Agent(
             task=make_discovery_prompt(start_url, limit),
             llm=build_llm(),
@@ -76,10 +81,12 @@ async def discover_urls_for_site(start_url: str, limit: int) -> list[str]:
         result = await agent.run()
         data = get_structured_output(result)
         if not data:
+            logger.warning("No structured discovery output for %s", start_url)
             return []
 
         urls = dedupe_preserve_order(data.listing_urls)
         urls = [u for u in urls if is_allowed_product_url(u)]
+        logger.info("Discovered %s allowed urls for %s", len(urls), start_url)
         return urls[:limit]
     finally:
         await _close_browser(browser)
@@ -88,6 +95,7 @@ async def discover_urls_for_site(start_url: str, limit: int) -> list[str]:
 async def extract_product(product_url: str) -> Optional[ProductCard]:
     browser = build_browser()
     try:
+        logger.info("Extracting product: %s", product_url)
         agent = Agent(
             task=make_product_prompt(product_url),
             llm=build_llm(),
@@ -97,7 +105,10 @@ async def extract_product(product_url: str) -> Optional[ProductCard]:
             max_failures=3,
         )
         result = await agent.run()
-        return get_structured_output(result)
+        data = get_structured_output(result)
+        if data is None:
+            logger.warning("No structured product output for %s", product_url)
+        return data
     finally:
         await _close_browser(browser)
 
@@ -105,6 +116,7 @@ async def extract_product(product_url: str) -> Optional[ProductCard]:
 async def generate_tags(card: ProductCard) -> list[str]:
     browser = build_browser()
     try:
+        logger.info("Generating tags for: %s", card.product_url or card.title)
         agent = Agent(
             task=make_tags_prompt(card),
             llm=build_llm(),
@@ -116,6 +128,7 @@ async def generate_tags(card: ProductCard) -> list[str]:
         result = await agent.run()
         data = get_structured_output(result)
         if not data:
+            logger.warning("No generated tags for: %s", card.product_url or card.title)
             return []
         return dedupe_preserve_order(data.tags)
     finally:

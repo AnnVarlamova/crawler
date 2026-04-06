@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import signal
 import sys
 
@@ -32,10 +33,12 @@ from app.utils import (
     write_json,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def _handle_stop(signum, frame):
     runtime.STOP_REQUESTED = True
-    print("\n[!] Stop requested. Waiting for current tasks to finish safely...", flush=True)
+    logger.warning("Stop requested. Waiting for current tasks to finish safely...")
 
 
 signal.signal(signal.SIGINT, _handle_stop)
@@ -79,7 +82,7 @@ async def discover_phase(state: State, limit_per_site: int) -> None:
         if runtime.STOP_REQUESTED:
             return
 
-        print(f"[DISCOVER] {site_key} -> {start_url}", flush=True)
+        logger.info("[DISCOVER] %s -> %s", site_key, start_url)
         try:
             urls = await discover_urls_for_site(start_url, limit_per_site)
             added = 0
@@ -88,10 +91,11 @@ async def discover_phase(state: State, limit_per_site: int) -> None:
                     state.discovered_urls.add(url)
                     append_jsonl(DISCOVERED_FILE, {"url": url, "site": site_key})
                     added += 1
-            print(f"[DISCOVER] {site_key}: found={len(urls)} new={added}", flush=True)
+
+            logger.info("[DISCOVER] %s: found=%s new=%s", site_key, len(urls), added)
         except Exception as e:
             append_jsonl(ERRORS_FILE, {"phase": "discover", "site": site_key, "error": str(e)})
-            print(f"[DISCOVER] {site_key}: error={e}", flush=True)
+            logger.exception("[DISCOVER] %s failed", site_key)
 
 
 async def process_one_url(url: str, state: State, max_images: int, lock: asyncio.Lock) -> None:
@@ -104,11 +108,12 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
         state.in_progress_urls.add(url)
 
     try:
-        print(f"[PROCESS] {url}", flush=True)
+        logger.info("[PROCESS] %s", url)
 
         card = await extract_product(url)
         if not card:
             append_jsonl(ERRORS_FILE, {"phase": "extract", "url": url, "error": "no structured output"})
+            logger.warning("[PROCESS] no structured output for %s", url)
             return
 
         if not card.source_site:
@@ -122,12 +127,14 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
             if item_id in state.saved_item_ids:
                 state.processed_urls.add(url)
                 append_jsonl(PROCESSED_FILE, {"url": url, "status": "already_saved"})
+                logger.info("[PROCESS] already saved: %s", item_id)
                 return
 
         if not is_valid_product(card):
             async with lock:
                 state.processed_urls.add(url)
                 append_jsonl(PROCESSED_FILE, {"url": url, "status": "filtered_out"})
+            logger.info("[PROCESS] filtered out: %s", url)
             return
 
         item_dir = ITEMS_DIR / item_id
@@ -140,11 +147,12 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
             append_jsonl(SAVED_ITEMS_FILE, {"item_id": saved_item_id, "url": url})
             state.processed_urls.add(url)
             append_jsonl(PROCESSED_FILE, {"url": url, "status": "saved"})
-            print(f"[SAVED] {saved_item_id}", flush=True)
+
+        logger.info("[SAVED] %s", saved_item_id)
 
     except Exception as e:
         append_jsonl(ERRORS_FILE, {"phase": "process", "url": url, "error": str(e)})
-        print(f"[ERROR] {url} -> {e}", flush=True)
+        logger.exception("[ERROR] processing failed for %s", url)
 
     finally:
         async with lock:
@@ -156,7 +164,7 @@ async def process_phase_concurrent(state: State, max_images: int, concurrency: i
         url for url in state.discovered_urls
         if url not in state.processed_urls and url not in state.in_progress_urls
     ]
-    print(f"[PROCESS] queued={len(queue)} concurrency={concurrency}", flush=True)
+    logger.info("[PROCESS] queued=%s concurrency=%s", len(queue), concurrency)
 
     lock = asyncio.Lock()
     semaphore = asyncio.Semaphore(concurrency)
@@ -179,7 +187,7 @@ async def process_phase_concurrent(state: State, max_images: int, concurrency: i
     try:
         await asyncio.gather(*tasks)
     except asyncio.CancelledError:
-        pass
+        logger.warning("Processing tasks were cancelled")
 
 
 async def async_main():
@@ -205,20 +213,31 @@ async def async_main():
             i += 2
         else:
             i += 1
+    logger.info("Log level = %s", logging.getLevelName(logger.level))
+    logger.info("Starting pipeline")
+    logger.info("DATA_DIR=%s", DATA_DIR)
+    logger.info("STATE_DIR=%s", STATE_DIR)
+    logger.info("ITEMS_DIR=%s", ITEMS_DIR)
+    logger.info(
+        "Parameters: limit_per_site=%s, max_images=%s, concurrency=%s",
+        limit_per_site,
+        max_images,
+        concurrency,
+    )
 
     state = load_state()
 
-    print("[START] Discovery phase", flush=True)
+    logger.info("[START] Discovery phase")
     await discover_phase(state, limit_per_site=limit_per_site)
 
     if runtime.STOP_REQUESTED:
-        print("[STOP] Interrupted after discovery.", flush=True)
+        logger.warning("[STOP] Interrupted after discovery")
         return
 
-    print("[START] Concurrent process phase", flush=True)
+    logger.info("[START] Concurrent process phase")
     await process_phase_concurrent(state, max_images=max_images, concurrency=concurrency)
 
-    print("[DONE]", flush=True)
+    logger.info("[DONE]")
 
 
 def main():
