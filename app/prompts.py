@@ -15,6 +15,17 @@ Inspect the CURRENT page and return:
 1) obvious product/item URLs for adult clothing sewing patterns
 2) promising next section/listing/pagination URLs to continue discovery later
 
+CRITICAL NAVIGATION RULES:
+- You are ALREADY inside the correct section of the site.
+- DO NOT try to explore the whole site.
+- DO NOT go to homepage, blog, help, or unrelated categories.
+- DO NOT use breadcrumbs or top navigation to leave this section.
+- You may ONLY:
+  - stay on this page
+  - open pagination of this section
+  - open subcategories that clearly belong to this section
+- If unsure whether a link belongs to this section → SKIP it.
+
 Important constraints:
 - Work ONLY inside the same allowed domain.
 - Prefer inferring product links from repeated product cards on the current page.
@@ -39,6 +50,30 @@ Important constraints:
 - next_section_urls must contain only collection/listing/category/pagination pages.
 
 Output only the structured result.
+""".strip()
+
+
+def make_pattern_vault_prompt(start_url: str, limit: int) -> str:
+    return f"""
+Open this page: {start_url}
+
+Your goal:
+Extract product links ONLY from this page.
+
+CRITICAL RULE:
+- DO NOT click anything.
+- DO NOT navigate anywhere.
+- DO NOT open other pages.
+
+Just scan this page and collect product links.
+
+CONTENT RULES:
+- Only adult clothing sewing patterns
+- Exclude accessories, children, non-clothing
+
+Return up to {limit} URLs.
+
+Output only structured result.
 """.strip()
 
 

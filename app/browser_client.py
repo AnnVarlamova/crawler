@@ -15,7 +15,12 @@ from browser_use import Agent, Browser, ChatOpenAI
 from app.cache import load_cached_model, save_cached_model
 from app.config import BASE_TAGS, DEFAULT_BROWSER_MODEL, DEFAULT_TAGS_MODEL
 from app.models import DiscoveryBatch, GeneratedTags, ProductCard
-from app.prompts import make_discovery_prompt, make_product_prompt, make_tags_prompt
+from app.prompts import (
+    make_discovery_prompt,
+    make_pattern_vault_prompt,
+    make_product_prompt,
+    make_tags_prompt,
+)
 from app.utils import (
     dedupe_preserve_order,
     get_structured_output,
@@ -166,15 +171,36 @@ def _should_skip_llm_tags(base_tags: list[str], card: ProductCard) -> bool:
     return False
 
 
+def _is_pattern_vault_page(url: str) -> bool:
+    normalized = url.lower()
+    return "pattern-vault.com/free-designer-patterns" in normalized
+
+
+def _make_discovery_task(page_url: str, product_limit: int, section_limit: int) -> tuple[str, str]:
+    if _is_pattern_vault_page(page_url):
+        return (
+            "pattern_vault",
+            make_pattern_vault_prompt(page_url, product_limit),
+        )
+
+    return (
+        "default",
+        make_discovery_prompt(page_url, product_limit, section_limit),
+    )
+
+
 async def discover_batch_for_page(
     page_url: str,
     product_limit: int,
     section_limit: int,
 ) -> DiscoveryBatch:
+    prompt_kind, task = _make_discovery_task(page_url, product_limit, section_limit)
+
     cache_payload = {
         "page_url": page_url,
         "product_limit": product_limit,
         "section_limit": section_limit,
+        "prompt_kind": prompt_kind,
     }
     cached = load_cached_model("discover_page", cache_payload, DiscoveryBatch)
     if cached is not None:
@@ -192,13 +218,15 @@ async def discover_batch_for_page(
     browser = build_browser()
     try:
         logger.info(
-            "Discovering from page: page_url=%s product_limit=%s section_limit=%s",
+            "Discovering from page: page_url=%s product_limit=%s section_limit=%s prompt_kind=%s",
             page_url,
             product_limit,
             section_limit,
+            prompt_kind,
         )
+
         agent = Agent(
-            task=make_discovery_prompt(page_url, product_limit, section_limit),
+            task=task,
             llm=build_llm(DEFAULT_BROWSER_MODEL),
             browser=browser,
             use_vision=True,

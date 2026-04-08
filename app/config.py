@@ -18,27 +18,73 @@ os.environ["NO_PROXY"] = "127.0.0.1,localhost,::1"
 os.environ["no_proxy"] = "127.0.0.1,localhost,::1"
 
 
+# =========================
+# ТОЧЕЧНЫЕ СТАРТОВЫЕ СТРАНИЦЫ
+# =========================
+
 SITE_URLS = {
+    # 1. vikisews
+    "vikisews": "https://vikisews.com/vykrojki/vse-vykrojki/",
+
+    # 2. simplicity (оставляем корень — фильтры внутри агента)
     "simplicity": "https://simplicity.com/",
-    "vikisews": "https://vikisews.com/",
-    "burdastyle": "https://burdastyle.ru/",
-    "helpersew": "https://helpersew.com/",
-    "grasser": "https://grasser.ru/",
-    "shkatulka": "https://shkatulka-sew.ru/",
-    "korfiati": "https://korfiati.ru/",
-    "marfy": "https://www.marfy.it/",
+
+    # 3. grasser
+    "grasser_women": "https://grasser.ru/vykrojki/vykroyki-dlya-zhenshchin/",
+    "grasser_men": "https://grasser.ru/vykrojki/muzhskie-vykrojki/",
+
+    # 4. helpersew
+    "helpersew_women": "https://helpersew.com/catalog/zhenskie/",
+    "helpersew_men": "https://helpersew.com/catalog/muzhskie/",
+
+    # 5. burdastyle
+    "burdastyle_women": "https://burdastyle.ru/vikroyki/dlya-zhenshhin/",
+    "burdastyle_men": "https://burdastyle.ru/vikroyki/dlya-muzhchin/",
+
+    # 6. pattern vault (одна страница)
+    "pattern_vault": "https://blog.pattern-vault.com/free-designer-patterns/",
+
+    # 7. shkatulka
+    "shkatulka_women": "https://shkatulka-sew.ru/category/jenskie-vykroyki/",
+    "shkatulka_men": "https://shkatulka-sew.ru/category/mujskie-vykroyki/",
+
+    # 8. marfy
+    "marfy": "https://www.marfy.it/en/the-marfy-hand-made-pre-cut-sewing-pattern/",
+    "marfy_pdf": "https://www.marfy.it/en/sewing-pattern/digital-pdf-sewing-patterns/",
 }
+
+
+# =========================
+# ПРИОРИТЕТЫ (в твоём порядке)
+# =========================
 
 SITE_PRIORITY = {
     "vikisews": 100,
-    "grasser": 95,
-    "marfy": 90,
-    "helpersew": 80,
-    "simplicity": 70,
-    "shkatulka": 60,
-    "burdastyle": 50,
-    "korfiati": 40,
+
+    "simplicity": 90,
+
+    "grasser_women": 80,
+    "grasser_men": 80,
+
+    "helpersew_women": 70,
+    "helpersew_men": 70,
+
+    "burdastyle_women": 60,
+    "burdastyle_men": 60,
+
+    "pattern_vault": 50,
+
+    "shkatulka_women": 40,
+    "shkatulka_men": 40,
+
+    "marfy": 30,
+    "marfy_pdf": 30,
 }
+
+
+# =========================
+# ДОПУСТИМЫЕ ДОМЕНЫ
+# =========================
 
 ALLOWED_DOMAINS = [
     "*.simplicity.com",
@@ -47,9 +93,10 @@ ALLOWED_DOMAINS = [
     "*.helpersew.com",
     "*.grasser.ru",
     "*.shkatulka-sew.ru",
-    "*.korfiati.ru",
     "*.marfy.it",
+    "*.pattern-vault.com",
 ]
+
 
 DATA_DIR = Path("data")
 STATE_DIR = DATA_DIR / "_state"
