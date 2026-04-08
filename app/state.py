@@ -19,4 +19,5 @@ def load_state() -> State:
         saved_item_ids=read_jsonl_keyset(SAVED_ITEMS_FILE, "item_id"),
         downloaded_image_urls=read_jsonl_keyset(DOWNLOADED_IMAGES_FILE, "url"),
         in_progress_urls=set(),
+        reserved_item_ids=set(),
     )

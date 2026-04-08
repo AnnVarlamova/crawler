@@ -102,6 +102,9 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
     if runtime.STOP_REQUESTED:
         return
 
+    item_id: str | None = None
+    item_reserved = False
+
     async with lock:
         if url in state.processed_urls or url in state.in_progress_urls:
             return
@@ -130,6 +133,16 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
                 logger.info("[PROCESS] already saved: %s", item_id)
                 return
 
+            if item_id in state.reserved_item_ids:
+                state.processed_urls.add(url)
+                append_jsonl(PROCESSED_FILE, {"url": url, "status": "duplicate_in_progress"})
+                logger.info("[PROCESS] duplicate in progress: %s", item_id)
+                return
+
+            state.reserved_item_ids.add(item_id)
+            item_reserved = True
+            logger.debug("[PROCESS] reserved item_id=%s for url=%s", item_id, url)
+
         if not is_valid_product(card):
             async with lock:
                 state.processed_urls.add(url)
@@ -157,6 +170,8 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
     finally:
         async with lock:
             state.in_progress_urls.discard(url)
+            if item_reserved and item_id is not None:
+                state.reserved_item_ids.discard(item_id)
 
 
 async def process_phase_concurrent(state: State, max_images: int, concurrency: int) -> None:

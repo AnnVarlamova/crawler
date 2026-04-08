@@ -50,3 +50,4 @@ class State:
     saved_item_ids: set[str]
     downloaded_image_urls: set[str]
     in_progress_urls: set[str]
+    reserved_item_ids: set[str]
