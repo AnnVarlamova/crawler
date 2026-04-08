@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from app.config import SITE_URLS
 
@@ -36,6 +36,21 @@ def read_jsonl_keyset(path: Path, key: str) -> set[str]:
             except Exception:
                 continue
     return result
+
+
+def read_json_string_list(path: Path, key: str = "urls") -> list[str]:
+    if not path.exists():
+        return []
+
+    try:
+        obj = json.loads(path.read_text(encoding="utf-8"))
+        values = obj.get(key, [])
+        if isinstance(values, list):
+            return [x for x in values if isinstance(x, str) and x]
+    except Exception:
+        return []
+
+    return []
 
 
 def write_json(path: Path, data: dict) -> None:
@@ -125,3 +140,47 @@ def is_allowed_product_url(url: str) -> bool:
         "marfy.it",
     }
     return any(host == d or host.endswith("." + d) for d in allowed_hosts)
+
+
+def is_allowed_section_url(url: str) -> bool:
+    if not is_allowed_product_url(url):
+        return False
+
+    parsed = urlparse(url)
+    path = parsed.path.lower()
+    query = parse_qs(parsed.query)
+
+    banned_substrings = [
+        "/account", "/login", "/register", "/checkout", "/cart", "/wishlist",
+        "/blog", "/article", "/news", "/journal", "/help", "/support",
+        "/contacts", "/contact", "/about", "/privacy", "/policy", "/terms",
+        "/delivery", "/shipping", "/returns", "/faq",
+        "/search", "/lookbook", "/magazine",
+    ]
+    if any(part in path for part in banned_substrings):
+        return False
+
+    banned_suffixes = [".pdf", ".jpg", ".jpeg", ".png", ".webp", ".zip"]
+    if any(path.endswith(suffix) for suffix in banned_suffixes):
+        return False
+
+    useful_path_tokens = [
+        "catalog", "category", "shop", "store", "patterns", "pattern",
+        "women", "woman", "men", "man",
+        "dress", "dresses", "skirt", "skirts", "blouse", "blouses",
+        "shirt", "shirts", "top", "tops", "jacket", "jackets",
+        "coat", "coats", "trousers", "pants", "jeans", "shorts",
+        "vest", "sweater", "cardigan", "jumpsuit",
+        "odezhda", "platya", "yubki", "bryuki", "bluzki", "ruk",
+        "page",
+    ]
+    if path in {"", "/"}:
+        return True
+
+    if any(token in path for token in useful_path_tokens):
+        return True
+
+    if any(k.lower() in {"page", "p", "paged"} for k in query):
+        return True
+
+    return False

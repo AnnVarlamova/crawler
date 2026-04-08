@@ -10,6 +10,11 @@ class ListingLinks(BaseModel):
     listing_urls: list[str] = Field(default_factory=list)
 
 
+class DiscoveryBatch(BaseModel):
+    product_urls: list[str] = Field(default_factory=list)
+    next_section_urls: list[str] = Field(default_factory=list)
+
+
 class ProductImage(BaseModel):
     url: str
     alt: Optional[str] = None
@@ -51,3 +56,5 @@ class State:
     downloaded_image_urls: set[str]
     in_progress_urls: set[str]
     reserved_item_ids: set[str]
+    pending_section_urls: set[str]
+    visited_section_urls: set[str]

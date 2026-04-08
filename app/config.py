@@ -42,6 +42,7 @@ ALLOWED_DOMAINS = [
 
 DATA_DIR = Path("data")
 STATE_DIR = DATA_DIR / "_state"
+CACHE_DIR = DATA_DIR / "_cache"
 
 
 # =========================
@@ -82,9 +83,20 @@ DOWNLOADED_IMAGES_FILE = STATE_DIR / "downloaded_images.jsonl"
 ERRORS_FILE = STATE_DIR / "errors.jsonl"
 IN_PROGRESS_FILE = STATE_DIR / "in_progress_urls.jsonl"
 
+PENDING_SECTION_URLS_FILE = STATE_DIR / "pending_section_urls.json"
+VISITED_SECTION_URLS_FILE = STATE_DIR / "visited_section_urls.json"
+
 DEFAULT_LIMIT_PER_SITE = 3
 DEFAULT_MAX_IMAGES = 8
 DEFAULT_CONCURRENCY = 1
+
+DEFAULT_SECTIONS_PER_SITE = 1
+DEFAULT_DISCOVERY_PRODUCTS_PER_SECTION = 24
+DEFAULT_DISCOVERY_NEXT_SECTIONS_PER_SECTION = 12
+
+CACHE_VERSION = "v2"
+DEFAULT_BROWSER_MODEL = os.getenv("OPENAI_BROWSER_MODEL", "gpt-4.1")
+DEFAULT_TAGS_MODEL = os.getenv("OPENAI_TAGS_MODEL", "gpt-4.1-mini")
 
 BASE_TAGS = [
     "women", "men", "unisex",

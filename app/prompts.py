@@ -6,16 +6,22 @@ from app.config import BASE_TAGS
 from app.models import ProductCard
 
 
-def make_discovery_prompt(start_url: str, limit: int) -> str:
+def make_discovery_prompt(page_url: str, product_limit: int, section_limit: int) -> str:
     return f"""
-Open this site: {start_url}
+Open this exact page inside the allowed domain: {page_url}
 
 Your goal:
-Find individual product pages for adult sewing/clothing patterns.
+Inspect the CURRENT page and return:
+1) obvious product/item URLs for adult clothing sewing patterns
+2) promising next section/listing/pagination URLs to continue discovery later
 
 Important constraints:
-- Work ONLY inside the allowed domain.
-- Return ONLY concrete product/item pages, not category pages.
+- Work ONLY inside the same allowed domain.
+- Prefer inferring product links from repeated product cards on the current page.
+- Do NOT open every candidate product page just to verify it.
+- If the current page is a category/listing/search page and several cards clearly represent valid garment patterns,
+  collect those product URLs directly into product_urls.
+- Add next_section_urls only for promising listing/category/pagination pages that are worth visiting later.
 - Focus on WOMEN'S and MEN'S clothing.
 - Exclude:
   - children / kids / baby / teen
@@ -23,9 +29,14 @@ Important constraints:
   - bags, hats, scarves, belts, gloves, socks
   - toys, dolls, pets
   - home decor, quilts, crafts
-  - articles/blog/editorial pages unless they clearly correspond to one concrete garment pattern page
-- Prefer pages with finished garment photos and product/pattern description.
-- Return up to {limit} unique absolute URLs.
+  - articles/blog/editorial/help pages
+  - account/cart/login/checkout/wishlist/search-policy pages
+- Prefer pages with finished garment photos and product/pattern descriptions.
+- Return up to {product_limit} unique absolute URLs in product_urls.
+- Return up to {section_limit} unique absolute URLs in next_section_urls.
+- Do not include duplicates across the two lists.
+- product_urls must contain only concrete product pages.
+- next_section_urls must contain only collection/listing/category/pagination pages.
 
 Output only the structured result.
 """.strip()
