@@ -12,7 +12,6 @@ from app.config import (
     DEFAULT_CONCURRENCY,
     DEFAULT_DISCOVERY_NEXT_SECTIONS_PER_SECTION,
     DEFAULT_DISCOVERY_PRODUCTS_PER_SECTION,
-    DEFAULT_LIMIT_PER_SITE,
     DEFAULT_MAX_IMAGES,
     DEFAULT_SECTIONS_PER_SITE,
     DISCOVERED_FILE,
@@ -21,6 +20,7 @@ from app.config import (
     PENDING_SECTION_URLS_FILE,
     PROCESSED_FILE,
     SAVED_ITEMS_FILE,
+    SITE_PRIORITY,
     SITE_URLS,
     STATE_DIR,
     VISITED_SECTION_URLS_FILE,
@@ -38,8 +38,6 @@ from app.utils import (
     stable_item_id,
     write_json,
 )
-from app.config import INDEX_FILE
-from app.utils import append_index_row
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +64,13 @@ def seed_pending_sections(state: State) -> None:
             changed = True
     if changed:
         persist_section_state(state)
+
+
+def get_ordered_site_keys() -> list[str]:
+    return sorted(
+        SITE_URLS.keys(),
+        key=lambda site_key: (-SITE_PRIORITY.get(site_key, 0), site_key),
+    )
 
 
 def save_item(card: ProductCard, tags: list[str], downloaded_images: list[str]) -> str:
@@ -96,15 +101,6 @@ def save_item(card: ProductCard, tags: list[str], downloaded_images: list[str]) 
     write_json(item_dir / "metadata.json", metadata)
     write_json(item_dir / "tags.json", {"tags": tags})
     (item_dir / "raw_text.txt").write_text(card.raw_text or "", encoding="utf-8")
-    append_index_row(INDEX_FILE, {
-        "item_id": item_id,
-        "title": card.title,
-        "site": card.source_site,
-        "category": card.category,
-        "subcategory": card.subcategory,
-        "tags": tags,
-        "path": str(item_dir),
-    })
 
     return item_id
 
@@ -118,8 +114,14 @@ async def discover_iteration(
     seed_pending_sections(state)
 
     visited_this_iteration = 0
+    ordered_site_keys = get_ordered_site_keys()
 
-    for site_key in SITE_URLS:
+    logger.info(
+        "[DISCOVER] site priority order: %s",
+        ", ".join(f"{site}({SITE_PRIORITY.get(site, 0)})" for site in ordered_site_keys),
+    )
+
+    for site_key in ordered_site_keys:
         if runtime.STOP_REQUESTED:
             break
 
@@ -134,7 +136,12 @@ async def discover_iteration(
             if runtime.STOP_REQUESTED:
                 break
 
-            logger.info("[DISCOVER] site=%s page=%s", site_key, page_url)
+            logger.info(
+                "[DISCOVER] site=%s priority=%s page=%s",
+                site_key,
+                SITE_PRIORITY.get(site_key, 0),
+                page_url,
+            )
 
             state.pending_section_urls.discard(page_url)
             persist_section_state(state)
@@ -169,8 +176,9 @@ async def discover_iteration(
                 visited_this_iteration += 1
 
                 logger.info(
-                    "[DISCOVER] site=%s page=%s new_products=%s new_sections=%s remaining_pending_for_site=%s",
+                    "[DISCOVER] site=%s priority=%s page=%s new_products=%s new_sections=%s remaining_pending_for_site=%s",
                     site_key,
+                    SITE_PRIORITY.get(site_key, 0),
                     page_url,
                     added_products,
                     added_sections,
@@ -341,6 +349,10 @@ async def async_main():
         concurrency,
         discovery_products_per_section,
         discovery_next_sections_per_section,
+    )
+    logger.info(
+        "Site priority order: %s",
+        ", ".join(f"{site}({SITE_PRIORITY.get(site, 0)})" for site in get_ordered_site_keys()),
     )
 
     state = load_state()

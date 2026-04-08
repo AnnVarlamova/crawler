@@ -29,6 +29,17 @@ SITE_URLS = {
     "marfy": "https://www.marfy.it/",
 }
 
+SITE_PRIORITY = {
+    "vikisews": 100,
+    "grasser": 95,
+    "marfy": 90,
+    "helpersew": 80,
+    "simplicity": 70,
+    "shkatulka": 60,
+    "burdastyle": 50,
+    "korfiati": 40,
+}
+
 ALLOWED_DOMAINS = [
     "*.simplicity.com",
     "*.vikisews.com",
@@ -117,5 +128,3 @@ BASE_TAGS = [
     "beginner", "intermediate", "advanced",
     "pdf-pattern", "sewing-pattern",
 ]
-
-INDEX_FILE = DATA_DIR / "index.jsonl"
