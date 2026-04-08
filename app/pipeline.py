@@ -38,6 +38,8 @@ from app.utils import (
     stable_item_id,
     write_json,
 )
+from app.config import INDEX_FILE
+from app.utils import append_index_row
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +96,15 @@ def save_item(card: ProductCard, tags: list[str], downloaded_images: list[str]) 
     write_json(item_dir / "metadata.json", metadata)
     write_json(item_dir / "tags.json", {"tags": tags})
     (item_dir / "raw_text.txt").write_text(card.raw_text or "", encoding="utf-8")
+    append_index_row(INDEX_FILE, {
+        "item_id": item_id,
+        "title": card.title,
+        "site": card.source_site,
+        "category": card.category,
+        "subcategory": card.subcategory,
+        "tags": tags,
+        "path": str(item_dir),
+    })
 
     return item_id
 

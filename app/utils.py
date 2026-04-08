@@ -184,3 +184,6 @@ def is_allowed_section_url(url: str) -> bool:
         return True
 
     return False
+
+def append_index_row(path: Path, row: dict) -> None:
+    append_jsonl(path, row)

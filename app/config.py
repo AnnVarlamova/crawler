@@ -117,3 +117,5 @@ BASE_TAGS = [
     "beginner", "intermediate", "advanced",
     "pdf-pattern", "sewing-pattern",
 ]
+
+INDEX_FILE = DATA_DIR / "index.jsonl"
