@@ -117,6 +117,10 @@ def detect_site_key(url: str) -> str:
     return host
 
 
+def get_site_host(url: str) -> str:
+    return urlparse(url).netloc.lower().replace("www.", "")
+
+
 def get_structured_output(result):
     if hasattr(result, "output") and result.output is not None:
         return result.output
@@ -128,7 +132,7 @@ def get_structured_output(result):
 
 
 def is_allowed_product_url(url: str) -> bool:
-    host = urlparse(url).netloc.lower().replace("www.", "")
+    host = get_site_host(url)
     allowed_hosts = {
         "simplicity.com",
         "vikisews.com",
@@ -136,8 +140,9 @@ def is_allowed_product_url(url: str) -> bool:
         "helpersew.com",
         "grasser.ru",
         "shkatulka-sew.ru",
-        "korfiati.ru",
         "marfy.it",
+        "blog.pattern-vault.com",
+        "pattern-vault.com",
     }
     return any(host == d or host.endswith("." + d) for d in allowed_hosts)
 
@@ -147,8 +152,12 @@ def is_allowed_section_url(url: str) -> bool:
         return False
 
     parsed = urlparse(url)
+    host = get_site_host(url)
     path = parsed.path.lower()
     query = parse_qs(parsed.query)
+
+    if "pattern-vault.com" in host:
+        return False
 
     banned_substrings = [
         "/account", "/login", "/register", "/checkout", "/cart", "/wishlist",
@@ -171,7 +180,7 @@ def is_allowed_section_url(url: str) -> bool:
         "shirt", "shirts", "top", "tops", "jacket", "jackets",
         "coat", "coats", "trousers", "pants", "jeans", "shorts",
         "vest", "sweater", "cardigan", "jumpsuit",
-        "odezhda", "platya", "yubki", "bryuki", "bluzki", "ruk",
+        "odezhda", "platya", "yubki", "bryuki", "bluzki",
         "page",
     ]
     if path in {"", "/"}:
@@ -184,6 +193,3 @@ def is_allowed_section_url(url: str) -> bool:
         return True
 
     return False
-
-def append_index_row(path: Path, row: dict) -> None:
-    append_jsonl(path, row)

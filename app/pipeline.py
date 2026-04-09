@@ -20,6 +20,7 @@ from app.config import (
     PENDING_SECTION_URLS_FILE,
     PROCESSED_FILE,
     SAVED_ITEMS_FILE,
+    SITE_ERROR_LIMIT,
     SITE_PRIORITY,
     SITE_URLS,
     STATE_DIR,
@@ -33,6 +34,8 @@ from app.utils import (
     append_jsonl,
     detect_site_key,
     ensure_dir,
+    get_site_host,
+    is_allowed_product_url,
     is_allowed_section_url,
     merge_tags,
     stable_item_id,
@@ -71,6 +74,21 @@ def get_ordered_site_keys() -> list[str]:
         SITE_URLS.keys(),
         key=lambda site_key: (-SITE_PRIORITY.get(site_key, 0), site_key),
     )
+
+
+def is_site_blocked(state: State, site_host: str) -> bool:
+    return state.site_error_counts.get(site_host, 0) >= SITE_ERROR_LIMIT
+
+
+def record_site_success(state: State, site_host: str) -> None:
+    if state.site_error_counts.get(site_host, 0):
+        state.site_error_counts[site_host] = 0
+
+
+def record_site_error(state: State, site_host: str) -> int:
+    current = state.site_error_counts.get(site_host, 0) + 1
+    state.site_error_counts[site_host] = current
+    return current
 
 
 def save_item(card: ProductCard, tags: list[str], downloaded_images: list[str]) -> str:
@@ -125,9 +143,20 @@ async def discover_iteration(
         if runtime.STOP_REQUESTED:
             break
 
+        start_url = SITE_URLS[site_key]
+        site_host = get_site_host(start_url)
+        if is_site_blocked(state, site_host):
+            logger.warning(
+                "[DISCOVER] skipping blocked site=%s host=%s errors=%s",
+                site_key,
+                site_host,
+                state.site_error_counts.get(site_host, 0),
+            )
+            continue
+
         site_pending = [
             url for url in state.pending_section_urls
-            if detect_site_key(url) == site_key
+            if detect_site_key(url) == site_key or get_site_host(url) == site_host
         ]
         if not site_pending:
             continue
@@ -159,6 +188,8 @@ async def discover_iteration(
                 added_sections = 0
 
                 for product_url in batch.product_urls:
+                    if not is_allowed_product_url(product_url):
+                        continue
                     if product_url not in state.discovered_urls:
                         state.discovered_urls.add(product_url)
                         append_jsonl(DISCOVERED_FILE, {"url": product_url, "site": site_key, "source_page": page_url})
@@ -174,6 +205,7 @@ async def discover_iteration(
 
                 persist_section_state(state)
                 visited_this_iteration += 1
+                record_site_success(state, site_host)
 
                 logger.info(
                     "[DISCOVER] site=%s priority=%s page=%s new_products=%s new_sections=%s remaining_pending_for_site=%s",
@@ -182,13 +214,22 @@ async def discover_iteration(
                     page_url,
                     added_products,
                     added_sections,
-                    len([u for u in state.pending_section_urls if detect_site_key(u) == site_key]),
+                    len([u for u in state.pending_section_urls if get_site_host(u) == site_host]),
                 )
             except Exception as e:
                 state.pending_section_urls.add(page_url)
                 persist_section_state(state)
+                count = record_site_error(state, site_host)
                 append_jsonl(ERRORS_FILE, {"phase": "discover", "site": site_key, "page_url": page_url, "error": str(e)})
                 logger.exception("[DISCOVER] failed for page %s", page_url)
+                if count >= SITE_ERROR_LIMIT:
+                    logger.warning(
+                        "[DISCOVER] site blocked for this run: site=%s host=%s errors=%s",
+                        site_key,
+                        site_host,
+                        count,
+                    )
+                    break
 
     return visited_this_iteration
 
@@ -197,8 +238,16 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
     if runtime.STOP_REQUESTED:
         return
 
+    site_host = get_site_host(url)
     item_id: str | None = None
     item_reserved = False
+
+    if is_site_blocked(state, site_host):
+        async with lock:
+            state.processed_urls.add(url)
+            append_jsonl(PROCESSED_FILE, {"url": url, "status": "site_blocked"})
+        logger.warning("[PROCESS] skip blocked site host=%s url=%s", site_host, url)
+        return
 
     async with lock:
         if url in state.processed_urls or url in state.in_progress_urls:
@@ -212,6 +261,9 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
         if not card:
             append_jsonl(ERRORS_FILE, {"phase": "extract", "url": url, "error": "no structured output"})
             logger.warning("[PROCESS] no structured output for %s", url)
+            count = record_site_error(state, site_host)
+            if count >= SITE_ERROR_LIMIT:
+                logger.warning("[PROCESS] site blocked for this run: host=%s errors=%s", site_host, count)
             return
 
         if not card.source_site:
@@ -226,12 +278,14 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
                 state.processed_urls.add(url)
                 append_jsonl(PROCESSED_FILE, {"url": url, "status": "already_saved"})
                 logger.info("[PROCESS] already saved: %s", item_id)
+                record_site_success(state, site_host)
                 return
 
             if item_id in state.reserved_item_ids:
                 state.processed_urls.add(url)
                 append_jsonl(PROCESSED_FILE, {"url": url, "status": "duplicate_in_progress"})
                 logger.info("[PROCESS] duplicate in progress: %s", item_id)
+                record_site_success(state, site_host)
                 return
 
             state.reserved_item_ids.add(item_id)
@@ -243,6 +297,7 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
                 state.processed_urls.add(url)
                 append_jsonl(PROCESSED_FILE, {"url": url, "status": "filtered_out"})
             logger.info("[PROCESS] filtered out: %s", url)
+            record_site_success(state, site_host)
             return
 
         item_dir = ITEMS_DIR / item_id
@@ -257,10 +312,14 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
             append_jsonl(PROCESSED_FILE, {"url": url, "status": "saved"})
 
         logger.info("[SAVED] %s", saved_item_id)
+        record_site_success(state, site_host)
 
     except Exception as e:
+        count = record_site_error(state, site_host)
         append_jsonl(ERRORS_FILE, {"phase": "process", "url": url, "error": str(e)})
         logger.exception("[ERROR] processing failed for %s", url)
+        if count >= SITE_ERROR_LIMIT:
+            logger.warning("[PROCESS] site blocked for this run: host=%s errors=%s", site_host, count)
 
     finally:
         async with lock:
@@ -272,7 +331,9 @@ async def process_one_url(url: str, state: State, max_images: int, lock: asyncio
 async def process_phase_concurrent(state: State, max_images: int, concurrency: int) -> int:
     queue = [
         url for url in state.discovered_urls
-        if url not in state.processed_urls and url not in state.in_progress_urls
+        if url not in state.processed_urls
+        and url not in state.in_progress_urls
+        and not is_site_blocked(state, get_site_host(url))
     ]
     logger.info("[PROCESS] queued=%s concurrency=%s", len(queue), concurrency)
 
@@ -380,16 +441,22 @@ async def async_main():
 
         remaining_products = len([
             url for url in state.discovered_urls
-            if url not in state.processed_urls and url not in state.in_progress_urls
+            if url not in state.processed_urls
+            and url not in state.in_progress_urls
+            and not is_site_blocked(state, get_site_host(url))
         ])
-        remaining_sections = len(state.pending_section_urls)
+        remaining_sections = len([
+            url for url in state.pending_section_urls
+            if not is_site_blocked(state, get_site_host(url))
+        ])
 
         logger.info(
-            "[LOOP] visited_sections=%s processed_count=%s remaining_sections=%s remaining_products=%s",
+            "[LOOP] visited_sections=%s processed_count=%s remaining_sections=%s remaining_products=%s blocked_sites=%s",
             visited_sections,
             processed_count,
             remaining_sections,
             remaining_products,
+            {k: v for k, v in state.site_error_counts.items() if v >= SITE_ERROR_LIMIT},
         )
 
         if visited_sections == 0 and processed_count == 0:

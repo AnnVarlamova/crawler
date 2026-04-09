@@ -4,17 +4,25 @@ import asyncio
 import atexit
 import logging
 import os
+import random
 import shutil
 import tempfile
-from typing import Optional
+from typing import Awaitable, Callable, Optional, TypeVar
 
 from dotenv import load_dotenv
 
 from browser_use import Agent, Browser, ChatOpenAI
 
 from app.cache import load_cached_model, save_cached_model
-from app.config import BASE_TAGS, DEFAULT_BROWSER_MODEL, DEFAULT_TAGS_MODEL
-from app.models import DiscoveryBatch, GeneratedTags, ProductCard
+from app.config import (
+    AGENT_MAX_RETRIES,
+    AGENT_RETRY_BASE_DELAY_SEC,
+    AGENT_RETRY_MAX_DELAY_SEC,
+    BASE_TAGS,
+    DEFAULT_BROWSER_MODEL,
+    DEFAULT_TAGS_MODEL,
+)
+from app.models import AgentProductCard, DiscoveryBatch, GeneratedTags, ProductCard, ProductImage
 from app.prompts import (
     make_discovery_prompt,
     make_pattern_vault_prompt,
@@ -34,6 +42,7 @@ logger = logging.getLogger(__name__)
 
 _TEMP_BROWSER_DIRS: list[str] = []
 _ALLOWED_TAGS = {normalize_tag(tag) for tag in BASE_TAGS}
+T = TypeVar("T")
 
 
 def _cleanup_temp_browser_dirs() -> None:
@@ -70,6 +79,10 @@ def build_browser() -> Browser:
         channel="chromium",
         user_data_dir=profile_dir,
         enable_default_extensions=False,
+        args=[
+            "--disable-dev-shm-usage",
+            "--no-sandbox",
+        ],
     )
 
 
@@ -79,6 +92,42 @@ async def _close_browser(browser: Browser) -> None:
         maybe = maybe_close()
         if asyncio.iscoroutine(maybe):
             await maybe
+
+
+async def _run_with_retry(
+    phase: str,
+    target: str,
+    op: Callable[[], Awaitable[T]],
+    max_retries: int = AGENT_MAX_RETRIES,
+) -> T:
+    last_error: Exception | None = None
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            return await op()
+        except Exception as e:
+            last_error = e
+            retryable = attempt < max_retries
+            logger.warning(
+                "[RETRY] phase=%s target=%s attempt=%s/%s error=%s",
+                phase,
+                target,
+                attempt,
+                max_retries,
+                e,
+            )
+            if not retryable:
+                break
+
+            delay = min(
+                AGENT_RETRY_BASE_DELAY_SEC * (2 ** (attempt - 1)),
+                AGENT_RETRY_MAX_DELAY_SEC,
+            )
+            delay += random.uniform(0, 0.5)
+            await asyncio.sleep(delay)
+
+    assert last_error is not None
+    raise last_error
 
 
 def _clean_value(value: str | None) -> str | None:
@@ -189,6 +238,29 @@ def _make_discovery_task(page_url: str, product_limit: int, section_limit: int) 
     )
 
 
+def _to_product_card(data: AgentProductCard) -> ProductCard:
+    image_urls = dedupe_preserve_order(data.image_urls)
+    images = [ProductImage(url=url) for url in image_urls if url]
+    return ProductCard(
+        source_site=data.source_site,
+        product_url=data.product_url,
+        title=data.title,
+        gender=data.gender,
+        category=data.category,
+        subcategory=data.subcategory,
+        season=data.season,
+        garment_elements=data.garment_elements,
+        materials=data.materials,
+        short_description=data.short_description,
+        pattern_info=data.pattern_info,
+        raw_text=data.raw_text,
+        adult_only=data.adult_only,
+        is_accessory=data.is_accessory,
+        is_child_item=data.is_child_item,
+        images=images,
+    )
+
+
 async def discover_batch_for_page(
     page_url: str,
     product_limit: int,
@@ -215,50 +287,53 @@ async def discover_batch_for_page(
         ][:section_limit]
         return cached
 
-    browser = build_browser()
-    try:
-        logger.info(
-            "Discovering from page: page_url=%s product_limit=%s section_limit=%s prompt_kind=%s",
-            page_url,
-            product_limit,
-            section_limit,
-            prompt_kind,
-        )
+    async def _op() -> DiscoveryBatch:
+        browser = build_browser()
+        try:
+            logger.info(
+                "Discovering from page: page_url=%s product_limit=%s section_limit=%s prompt_kind=%s",
+                page_url,
+                product_limit,
+                section_limit,
+                prompt_kind,
+            )
 
-        agent = Agent(
-            task=task,
-            llm=build_llm(DEFAULT_BROWSER_MODEL),
-            browser=browser,
-            use_vision=True,
-            output_model_schema=DiscoveryBatch,
-            max_failures=3,
-        )
-        result = await agent.run()
-        data = get_structured_output(result)
-        if not data:
-            logger.warning("No structured discovery output for %s", page_url)
-            return DiscoveryBatch()
+            agent = Agent(
+                task=task,
+                llm=build_llm(DEFAULT_BROWSER_MODEL),
+                browser=browser,
+                use_vision=False,
+                output_model_schema=DiscoveryBatch,
+                max_failures=3,
+            )
+            result = await agent.run()
+            data = get_structured_output(result)
+            if not data:
+                raise RuntimeError("no structured discovery output")
 
-        data.product_urls = [
-            u for u in dedupe_preserve_order(data.product_urls)
-            if is_allowed_product_url(u)
-        ][:product_limit]
-        used = set(data.product_urls)
-        data.next_section_urls = [
-            u for u in dedupe_preserve_order(data.next_section_urls)
-            if u not in used and is_allowed_section_url(u)
-        ][:section_limit]
+            data.product_urls = [
+                u for u in dedupe_preserve_order(data.product_urls)
+                if is_allowed_product_url(u)
+            ][:product_limit]
+            used = set(data.product_urls)
+            data.next_section_urls = [
+                u for u in dedupe_preserve_order(data.next_section_urls)
+                if u not in used and is_allowed_section_url(u)
+            ][:section_limit]
 
-        save_cached_model("discover_page", cache_payload, data)
-        logger.info(
-            "Discovered product_urls=%s next_section_urls=%s from %s",
-            len(data.product_urls),
-            len(data.next_section_urls),
-            page_url,
-        )
-        return data
-    finally:
-        await _close_browser(browser)
+            save_cached_model("discover_page", cache_payload, data)
+            return data
+        finally:
+            await _close_browser(browser)
+
+    data = await _run_with_retry("discover", page_url, _op)
+    logger.info(
+        "Discovered product_urls=%s next_section_urls=%s from %s",
+        len(data.product_urls),
+        len(data.next_section_urls),
+        page_url,
+    )
+    return data
 
 
 async def extract_product(product_url: str) -> Optional[ProductCard]:
@@ -268,50 +343,55 @@ async def extract_product(product_url: str) -> Optional[ProductCard]:
         logger.info("Product cache hit: %s", product_url)
         return cached
 
-    browser = build_browser()
-    try:
-        logger.info("Extracting product: %s", product_url)
-        agent = Agent(
-            task=make_product_prompt(product_url),
-            llm=build_llm(DEFAULT_BROWSER_MODEL),
-            browser=browser,
-            use_vision=True,
-            output_model_schema=ProductCard,
-            max_failures=3,
-        )
-        result = await agent.run()
-        data = get_structured_output(result)
-        if data is None:
-            logger.warning("No structured product output for %s", product_url)
-            return None
+    async def _op() -> ProductCard:
+        browser = build_browser()
+        try:
+            logger.info("Extracting product: %s", product_url)
+            agent = Agent(
+                task=make_product_prompt(product_url),
+                llm=build_llm(DEFAULT_BROWSER_MODEL),
+                browser=browser,
+                use_vision=True,
+                output_model_schema=AgentProductCard,
+                max_failures=3,
+            )
+            result = await agent.run()
+            data = get_structured_output(result)
+            if data is None:
+                raise RuntimeError("no structured product output")
 
-        save_cached_model("extract_product", cache_payload, data)
-        return data
-    finally:
-        await _close_browser(browser)
+            card = _to_product_card(data)
+            save_cached_model("extract_product", cache_payload, card)
+            return card
+        finally:
+            await _close_browser(browser)
+
+    return await _run_with_retry("extract", product_url, _op)
 
 
 async def _generate_tags_llm(card: ProductCard) -> list[str]:
-    browser = build_browser()
-    try:
-        logger.info("Generating LLM tags for: %s", card.product_url or card.title)
-        agent = Agent(
-            task=make_tags_prompt(card),
-            llm=build_llm(DEFAULT_TAGS_MODEL),
-            browser=browser,
-            use_vision=False,
-            output_model_schema=GeneratedTags,
-            max_failures=2,
-        )
-        result = await agent.run()
-        data = get_structured_output(result)
-        if not data:
-            logger.warning("No generated tags for: %s", card.product_url or card.title)
-            return []
+    async def _op() -> list[str]:
+        browser = build_browser()
+        try:
+            logger.info("Generating LLM tags for: %s", card.product_url or card.title)
+            agent = Agent(
+                task=make_tags_prompt(card),
+                llm=build_llm(DEFAULT_TAGS_MODEL),
+                browser=browser,
+                use_vision=False,
+                output_model_schema=GeneratedTags,
+                max_failures=2,
+            )
+            result = await agent.run()
+            data = get_structured_output(result)
+            if not data:
+                raise RuntimeError("no structured tags output")
 
-        return dedupe_preserve_order(data.tags)
-    finally:
-        await _close_browser(browser)
+            return dedupe_preserve_order(data.tags)
+        finally:
+            await _close_browser(browser)
+
+    return await _run_with_retry("tags", card.product_url or card.title, _op)
 
 
 async def generate_tags(card: ProductCard) -> list[str]:

@@ -24,4 +24,5 @@ def load_state() -> State:
         reserved_item_ids=set(),
         pending_section_urls=set(read_json_string_list(PENDING_SECTION_URLS_FILE)),
         visited_section_urls=set(read_json_string_list(VISITED_SECTION_URLS_FILE)),
+        site_error_counts={},
     )
