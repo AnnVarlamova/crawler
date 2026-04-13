@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -38,52 +37,18 @@ def read_jsonl_keyset(path: Path, key: str) -> set[str]:
     return result
 
 
-def read_json_string_list(path: Path, key: str = "urls") -> list[str]:
+def read_json(path: Path) -> dict | list | None:
     if not path.exists():
-        return []
-
+        return None
     try:
-        obj = json.loads(path.read_text(encoding="utf-8"))
-        values = obj.get(key, [])
-        if isinstance(values, list):
-            return [x for x in values if isinstance(x, str) and x]
+        return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
-        return []
-
-    return []
+        return None
 
 
-def write_json(path: Path, data: dict) -> None:
+def write_json(path: Path, data: dict | list) -> None:
     ensure_dir(path.parent)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def normalize_tag(tag: str) -> str:
-    return re.sub(r"[-\s]+", "-", tag.strip().lower())
-
-
-def merge_tags(*groups: list[str]) -> list[str]:
-    seen = set()
-    out = []
-    for group in groups:
-        for tag in group:
-            t = normalize_tag(tag)
-            if t and t not in seen:
-                seen.add(t)
-                out.append(t)
-    return out
-
-
-def slugify(text: str, max_len: int = 120) -> str:
-    text = text.lower().strip()
-    text = re.sub(r"[^\w\s-]+", " ", text, flags=re.UNICODE)
-    text = re.sub(r"[\s_-]+", "-", text, flags=re.UNICODE).strip("-")
-    return text[:max_len] or "item"
-
-
-def stable_item_id(url: str, title: str) -> str:
-    host = urlparse(url).netloc.replace("www.", "")
-    return f"{slugify(host)}__{slugify(title or url)}"
 
 
 def dedupe_preserve_order(items: list[str]) -> list[str]:
@@ -94,18 +59,6 @@ def dedupe_preserve_order(items: list[str]) -> list[str]:
             seen.add(x)
             out.append(x)
     return out
-
-
-def is_probably_image_url(url: str) -> bool:
-    u = url.lower()
-    return any(ext in u for ext in [".jpg", ".jpeg", ".png", ".webp", ".avif"])
-
-
-def filename_from_url(url: str, fallback: str) -> str:
-    name = Path(urlparse(url).path).name or fallback
-    if "." not in name:
-        name += ".jpg"
-    return name[:180]
 
 
 def detect_site_key(url: str) -> str:
@@ -122,12 +75,38 @@ def get_site_host(url: str) -> str:
 
 
 def get_structured_output(result):
-    if hasattr(result, "output") and result.output is not None:
-        return result.output
-    if hasattr(result, "structured_output") and result.structured_output is not None:
-        return result.structured_output
-    if hasattr(result, "final_result") and result.final_result is not None:
-        return result.final_result
+    candidates = []
+
+    if hasattr(result, "output"):
+        candidates.append(getattr(result, "output"))
+
+    if hasattr(result, "structured_output"):
+        candidates.append(getattr(result, "structured_output"))
+
+    if hasattr(result, "final_result"):
+        candidates.append(getattr(result, "final_result"))
+
+    for candidate in candidates:
+        if candidate is None:
+            continue
+
+        if callable(candidate):
+            try:
+                candidate = candidate()
+            except TypeError:
+                continue
+            except Exception:
+                continue
+
+        if candidate is None:
+            continue
+
+        if hasattr(candidate, "product_urls") and hasattr(candidate, "next_section_urls"):
+            return candidate
+
+        if isinstance(candidate, dict):
+            return candidate
+
     return None
 
 
@@ -147,49 +126,190 @@ def is_allowed_product_url(url: str) -> bool:
     return any(host == d or host.endswith("." + d) for d in allowed_hosts)
 
 
-def is_allowed_section_url(url: str) -> bool:
+def is_not_forbidden_section_url(url: str) -> bool:
     if not is_allowed_product_url(url):
         return False
 
     parsed = urlparse(url)
     host = get_site_host(url)
     path = parsed.path.lower()
-    query = parse_qs(parsed.query)
+    query = parsed.query.lower()
+    query_map = parse_qs(parsed.query)
 
-    if "pattern-vault.com" in host:
-        return False
+    full = f"{host}{path}"
+    if query:
+        full = f"{full}?{query}"
 
     banned_substrings = [
-        "/account", "/login", "/register", "/checkout", "/cart", "/wishlist",
-        "/blog", "/article", "/news", "/journal", "/help", "/support",
-        "/contacts", "/contact", "/about", "/privacy", "/policy", "/terms",
-        "/delivery", "/shipping", "/returns", "/faq",
-        "/search", "/lookbook", "/magazine",
+        "/account",
+        "/login",
+        "/register",
+        "/checkout",
+        "/cart",
+        "/wishlist",
+        "/profile",
+        "/auth",
+        "/password",
+        "/compare",
+        "/blog",
+        "/article",
+        "/articles",
+        "/news",
+        "/journal",
+        "/help",
+        "/support",
+        "/contacts",
+        "/contact",
+        "/about",
+        "/privacy",
+        "/policy",
+        "/terms",
+        "/delivery",
+        "/shipping",
+        "/returns",
+        "/faq",
+        "/lookbook",
+        "/magazine",
+        "/search",
+        "/filter/apply",
     ]
+
+    banned_suffixes = [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".webp",
+        ".avif",
+        ".gif",
+        ".svg",
+        ".zip",
+        ".rar",
+        ".7z",
+    ]
+
+    banned_tokens = [
+        "kids",
+        "kid",
+        "child",
+        "children",
+        "baby",
+        "babies",
+        "teen",
+        "teens",
+        "junior",
+        "newborn",
+        "toddler",
+        "deti",
+        "detyam",
+        "detsk",
+        "detskaya",
+        "detskie",
+        "detskij",
+        "detskii",
+        "dlya-detey",
+        "dlya-detej",
+        "dlya-detei",
+        "dlya-malchikov",
+        "dlya-devochek",
+        "malchik",
+        "malchiki",
+        "devoch",
+        "devochki",
+        "podrost",
+        "malyshi",
+        "accessory",
+        "accessories",
+        "aksessuar",
+        "aksessuary",
+        "аксессуар",
+        "bag",
+        "bags",
+        "sumk",
+        "sumka",
+        "sumki",
+        "backpack",
+        "backpacks",
+        "ryukzak",
+        "рюкзак",
+        "hat",
+        "hats",
+        "cap",
+        "caps",
+        "shapka",
+        "shapki",
+        "shlyapa",
+        "shlyapy",
+        "scarf",
+        "scarves",
+        "shawl",
+        "shawls",
+        "sharf",
+        "sharfy",
+        "palantin",
+        "belt",
+        "belts",
+        "remen",
+        "remni",
+        "glove",
+        "gloves",
+        "mittens",
+        "perchat",
+        "varezh",
+        "sock",
+        "socks",
+        "nosk",
+        "noski",
+        "kolgot",
+        "kolgoto",
+        "tights",
+        "stocking",
+        "stockings",
+        "tie",
+        "ties",
+        "galstuk",
+        "wallet",
+        "кошелек",
+        "koshelek",
+        "toy",
+        "toys",
+        "doll",
+        "dolls",
+        "pet",
+        "pets",
+        "home",
+        "decor",
+        "quilt",
+        "quilts",
+        "craft",
+        "crafts",
+        "podushk",
+        "odeyal",
+        "pled",
+    ]
+
+    banned_query_pairs = {
+        ("sort", "price"),
+        ("order", "desc"),
+    }
+
     if any(part in path for part in banned_substrings):
         return False
 
-    banned_suffixes = [".pdf", ".jpg", ".jpeg", ".png", ".webp", ".zip"]
     if any(path.endswith(suffix) for suffix in banned_suffixes):
         return False
 
-    useful_path_tokens = [
-        "catalog", "category", "shop", "store", "patterns", "pattern",
-        "women", "woman", "men", "man",
-        "dress", "dresses", "skirt", "skirts", "blouse", "blouses",
-        "shirt", "shirts", "top", "tops", "jacket", "jackets",
-        "coat", "coats", "trousers", "pants", "jeans", "shorts",
-        "vest", "sweater", "cardigan", "jumpsuit",
-        "odezhda", "platya", "yubki", "bryuki", "bluzki",
-        "page",
-    ]
-    if path in {"", "/"}:
-        return True
+    if any(token in full for token in banned_tokens):
+        return False
 
-    if any(token in path for token in useful_path_tokens):
-        return True
+    for key, values in query_map.items():
+        key_l = key.lower()
+        for value in values:
+            if (key_l, value.lower()) in banned_query_pairs:
+                return False
 
-    if any(k.lower() in {"page", "p", "paged"} for k in query):
-        return True
+    return True
 
-    return False
+
+def is_allowed_section_url(url: str) -> bool:
+    return is_not_forbidden_section_url(url)

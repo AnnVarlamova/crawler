@@ -1,128 +1,11 @@
-2026-04-09 12:55:57 | ERROR    | browser_use.BrowserSession🅑 8fd9 🅣 F9 | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20000ms) for https://vikisews.com/vykrojki/vse-vykrojki/
-2026-04-09 12:56:07 | ERROR    | browser_use.BrowserSession🅑 8fd9 🅣 F9 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#9712(?▶ NavigateToUrlEvent#9a4b 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 12:58:11 | ERROR    | asyncio | Exception in callback create_task_with_error_handling.<locals>._handle_task_exception(<Task finishe...not found.'})>) at D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py:726
-handle: <Handle create_task_with_error_handling.<locals>._handle_task_exception(<Task finishe...not found.'})>) at D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py:726>
-Traceback (most recent call last):
-  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 84, in _run
-    self._context.run(self._callback, *self._args)
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 753, in _handle_task_exception
-    raise exc_to_raise
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\dom\service.py", line 367, in _get_ax_tree_for_all_frames
-    ax_trees = await asyncio.gather(*ax_tree_requests)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\accessibility\library.py", line 87, in getFullAXTree
-    await self._client.send_raw(
-  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
-    return await future
-           ^^^^^^^^^^^^
-RuntimeError: {'code': -32602, 'message': 'Frame with the given frameId is not found.'}
-2026-04-09 12:58:11 | ERROR    | browser_use.BrowserSession🅑 6565 🅣 FC | Failed to build DOM tree without highlights: CDP requests failed or timed out: ax_tree
-2026-04-09 12:58:11 | ERROR    | browser_use.BrowserSession🅑 6565 🅣 FC | Exception in background task [build_dom_tree]: TimeoutError: CDP requests failed or timed out: ax_tree
-Traceback (most recent call last):
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 384, in wrapper
-    result = await func(*args, **kwargs)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
-    return await func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 555, in _build_dom_tree_without_highlights
-    self.current_dom_state, self.enhanced_dom_tree, timing_info = await self._dom_service.get_serialized_dom_tree(
-                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
-    return await func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\dom\service.py", line 1022, in get_serialized_dom_tree
-    enhanced_dom_tree, dom_tree_timing = await self.get_dom_tree(
-                                         ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
-    return await func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\dom\service.py", line 669, in get_dom_tree
-    trees = await self._get_all_trees(target_id)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\dom\service.py", line 595, in _get_all_trees
-    raise TimeoutError(f'CDP requests failed or timed out: {", ".join(failed)}')
-TimeoutError: CDP requests failed or timed out: ax_tree
-2026-04-09 13:01:03 | ERROR    | browser_use.BrowserSession🅑 82bf 🅣 32 | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20000ms) for https://helpersew.com/catalog/zhenskie/
-2026-04-09 13:01:13 | ERROR    | browser_use.BrowserSession🅑 82bf 🅣 32 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#9936(?▶ NavigateToUrlEvent#a5b5 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 13:05:03 | ERROR    | browser_use.BrowserSession🅑 bdef 🅣 3E | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20016ms) for https://blog.pattern-vault.com/free-designer-patterns/
-2026-04-09 13:05:13 | ERROR    | browser_use.BrowserSession🅑 bdef 🅣 3E | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#6848(?▶ NavigateToUrlEvent#a0e9 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 13:07:52 | ERROR    | browser_use.BrowserSession🅑 94f7 🅣 ED | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20015ms) for https://shkatulka-sew.ru/category/mujskie-vykroyki/
-2026-04-09 13:08:02 | ERROR    | browser_use.BrowserSession🅑 94f7 🅣 ED | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#0880(?▶ NavigateToUrlEvent#69ab 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 13:12:10 | ERROR    | browser_use.BrowserSession🅑 6f31 🅣 6E | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20015ms) for https://burdastyle.ru/vikroyki/bryuki/pryamye-bryuki-s-zastyozhkoj-v-bokovom-shve-burda-2026-4-108-b/
-2026-04-09 13:12:20 | ERROR    | browser_use.BrowserSession🅑 6f31 🅣 6E | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#0432(?▶ NavigateToUrlEvent#e902 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 13:15:13 | ERROR    | browser_use.BrowserSession🅑 aaaf 🅣 AB | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20015ms) for https://www.marfy.it/en/jackets/sewing-pattern-9839.html
-2026-04-09 13:15:23 | ERROR    | browser_use.BrowserSession🅑 aaaf 🅣 AB | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#1456(?▶ NavigateToUrlEvent#17c9 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 13:16:50 | ERROR    | browser_use.BrowserSession🅑 75aa 🅣 08 | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20016ms) for https://www.marfy.it/en/dresses/sewing-pattern-8105.html
-2026-04-09 13:17:00 | ERROR    | browser_use.BrowserSession🅑 75aa 🅣 08 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#6896(?▶ NavigateToUrlEvent#0a3a 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 13:21:41 | ERROR    | browser_use.BrowserSession🅑 334c 🅣 32 | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20000ms) for https://www.marfy.it/en/skirts/sewing-pattern-8089.html
-2026-04-09 13:21:51 | ERROR    | browser_use.BrowserSession🅑 334c 🅣 32 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#9408(?▶ NavigateToUrlEvent#38cd 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 14:07:25 | ERROR    | browser_use.BrowserSession🅑 f501 🅣 E5 | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20000ms) for https://vikisews.com/vykrojki/vse-vykrojki/
-2026-04-09 14:07:35 | ERROR    | browser_use.BrowserSession🅑 f501 🅣 E5 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#4880(?▶ NavigateToUrlEvent#eb8f 🏃) timed out after 30.0s and interrupted any processing of 3 child events
-2026-04-09 14:09:35 | ERROR    | browser_use.Agent🅰 6f58 ⇢ 🅑 f501 🅣 E5 | ❌ Result failed 4/4 times: 
-2026-04-09 14:09:35 | ERROR    | browser_use.Agent🅰 6f58 ⇢ 🅑 f501 🅣 E5 | ❌ Stopping due to 3 consecutive failures
-2026-04-09 14:09:43 | ERROR    | browser_use.BrowserSession🅑 f501 🅣 E5 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#4464(?▶ ScreenshotEvent#bd12 🏃) timed out after 15.0s
-Traceback (most recent call last):
-  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
-    return fut.result()
-           ^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
-    result = await actual_handler(event)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
-    return await func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 60, in on_ScreenshotEvent
-    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
-    await self._client.send_raw(
-  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
-    return await future
-           ^^^^^^^^^^^^
-asyncio.exceptions.CancelledError
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
-    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
-    raise exceptions.TimeoutError() from exc
-TimeoutError
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 384, in wrapper
-    result = await func(*args, **kwargs)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
-    return await func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 696, in _capture_clean_screenshot
-    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
-    valid_results = await self.event_results_filtered(
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
-    raise original_error
-  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
-    await event_result
-  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
-    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
-    await self.execute_handler(event, handler, timeout=timeout)
-  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
-    raise handler_timeout_error from e
-TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#4464(?▶ ScreenshotEvent#bd12 🏃) timed out after 15.0s
-2026-04-09 14:10:12 | ERROR    | browser_use.BrowserSession🅑 523d 🅣 95 | Navigation failed: RuntimeError: Page.navigate() timed out after 20.0s (20016ms) for https://vikisews.com/vykrojki/vse-vykrojki/
-2026-04-09 14:13:44 | ERROR    | browser_use.BrowserSession🅑 e0e5 🅣 F3 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#4896(?▶ NavigateToUrlEvent#4ffc 🏃) timed out after 30.0s and interrupted any processing of 1 child events
-2026-04-09 14:16:24 | ERROR    | browser_use.BrowserSession🅑 4e9c 🅣 86 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#3776(?▶ NavigateToUrlEvent#3cbc 🏃) timed out after 30.0s and interrupted any processing of 1 child events
-2026-04-09 14:16:47 | ERROR    | browser_use.BrowserSession🅑 4e9c 🅣 86 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#9792(?▶ ScreenshotEvent#a985 🏃) timed out after 15.0s
+2026-04-13 14:04:04 | ERROR    | browser_use.BrowserSession🅑 6ee7 🅣 E8 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#3744(?▶ NavigateToUrlEvent#9d68 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 14:08:45 | ERROR    | browser_use.BrowserSession🅑 9b6a 🅣 38 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#9056(?▶ NavigateToUrlEvent#538e 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 14:09:41 | ERROR    | browser_use.BrowserSession🅑 d1c5 🅣 04 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#3536(?▶ NavigateToUrlEvent#cc83 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 14:19:03 | ERROR    | browser_use.BrowserSession🅑 d3ef 🅣 C8 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#0016(?▶ NavigateToUrlEvent#4e78 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 14:42:46 | ERROR    | browser_use.BrowserSession🅑 3195 🅣 42 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#6512(?▶ NavigateToUrlEvent#8599 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 14:48:26 | ERROR    | browser_use.BrowserSession🅑 251f 🅣 E5 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#8928(?▶ NavigateToUrlEvent#c221 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 15:03:51 | ERROR    | browser_use.BrowserSession🅑 b6c8 🅣 92 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#8128(?▶ NavigateToUrlEvent#c9d2 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 15:32:05 | ERROR    | browser_use.BrowserSession🅑 bf6b 🅣 96 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#2160(?▶ ScreenshotEvent#bd48 🏃) timed out after 15.0s
 Traceback (most recent call last):
   File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
     return fut.result()
@@ -179,8 +62,9 @@ Traceback (most recent call last):
     await self.execute_handler(event, handler, timeout=timeout)
   File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
     raise handler_timeout_error from e
-TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#9792(?▶ ScreenshotEvent#a985 🏃) timed out after 15.0s
-2026-04-09 14:17:20 | ERROR    | browser_use.BrowserSession🅑 4e9c 🅣 86 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#9792(?▶ ScreenshotEvent#d28b 🏃) timed out after 15.0s
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#2160(?▶ ScreenshotEvent#bd48 🏃) timed out after 15.0s
+2026-04-13 15:33:03 | ERROR    | browser_use.BrowserSession🅑 8915 🅣 63 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#1952(?▶ NavigateToUrlEvent#c6c8 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 15:33:26 | ERROR    | browser_use.BrowserSession🅑 8915 🅣 63 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#5344(?▶ ScreenshotEvent#76a1 🏃) timed out after 15.0s
 Traceback (most recent call last):
   File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
     return fut.result()
@@ -237,125 +121,8 @@ Traceback (most recent call last):
     await self.execute_handler(event, handler, timeout=timeout)
   File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
     raise handler_timeout_error from e
-TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#9792(?▶ ScreenshotEvent#d28b 🏃) timed out after 15.0s
-2026-04-09 14:28:40 | ERROR    | app.pipeline | [DISCOVER] failed for page https://vikisews.com/vykrojki/vse-vykrojki/
-Traceback (most recent call last):
-  File "D:\diplom\crowler\app\pipeline.py", line 179, in discover_iteration
-    batch = await discover_batch_for_page(
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 331, in discover_batch_for_page
-    data = await _run_with_retry("discover", page_url, _op)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 131, in _run_with_retry
-    raise last_error
-  File "D:\diplom\crowler\app\browser_client.py", line 108, in _run_with_retry
-    return await op()
-           ^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 301, in _op
-    await browser.open(page_url)
-          ^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\pydantic\main.py", line 1026, in __getattr__
-    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
-AttributeError: 'BrowserSession' object has no attribute 'open'
-2026-04-09 14:28:47 | ERROR    | app.pipeline | [DISCOVER] failed for page https://simplicity.com/
-Traceback (most recent call last):
-  File "D:\diplom\crowler\app\pipeline.py", line 179, in discover_iteration
-    batch = await discover_batch_for_page(
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 331, in discover_batch_for_page
-    data = await _run_with_retry("discover", page_url, _op)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 131, in _run_with_retry
-    raise last_error
-  File "D:\diplom\crowler\app\browser_client.py", line 108, in _run_with_retry
-    return await op()
-           ^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 301, in _op
-    await browser.open(page_url)
-          ^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\pydantic\main.py", line 1026, in __getattr__
-    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
-AttributeError: 'BrowserSession' object has no attribute 'open'
-2026-04-09 14:28:54 | ERROR    | app.pipeline | [DISCOVER] failed for page https://grasser.ru/vykrojki/vykroyki-dlya-zhenshchin/
-Traceback (most recent call last):
-  File "D:\diplom\crowler\app\pipeline.py", line 179, in discover_iteration
-    batch = await discover_batch_for_page(
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 331, in discover_batch_for_page
-    data = await _run_with_retry("discover", page_url, _op)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 131, in _run_with_retry
-    raise last_error
-  File "D:\diplom\crowler\app\browser_client.py", line 108, in _run_with_retry
-    return await op()
-           ^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 301, in _op
-    await browser.open(page_url)
-          ^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\pydantic\main.py", line 1026, in __getattr__
-    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
-AttributeError: 'BrowserSession' object has no attribute 'open'
-2026-04-09 14:29:01 | ERROR    | app.pipeline | [DISCOVER] failed for page https://grasser.ru/vykrojki/muzhskie-vykrojki/
-Traceback (most recent call last):
-  File "D:\diplom\crowler\app\pipeline.py", line 179, in discover_iteration
-    batch = await discover_batch_for_page(
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 331, in discover_batch_for_page
-    data = await _run_with_retry("discover", page_url, _op)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 131, in _run_with_retry
-    raise last_error
-  File "D:\diplom\crowler\app\browser_client.py", line 108, in _run_with_retry
-    return await op()
-           ^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 301, in _op
-    await browser.open(page_url)
-          ^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\pydantic\main.py", line 1026, in __getattr__
-    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
-AttributeError: 'BrowserSession' object has no attribute 'open'
-2026-04-09 15:17:13 | ERROR    | browser_use.BrowserSession🅑 2af7 🅣 D8 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#2288(?▶ NavigateToUrlEvent#c3eb 🏃) timed out after 30.0s and interrupted any processing of 1 child events
-2026-04-09 15:17:50 | ERROR    | browser_use.BrowserSession🅑 2af7 🅣 [91m--[0m | [SessionManager] ❌ Error during agent_focus recovery: RuntimeError: {'code': -32000, 'message': 'Failed to open a new tab'}
-2026-04-09 15:19:13 | ERROR    | app.pipeline | [DISCOVER] failed for page https://vikisews.com/vykrojki/vse-vykrojki/
-Traceback (most recent call last):
-  File "D:\diplom\crowler\app\pipeline.py", line 179, in discover_iteration
-    batch = await discover_batch_for_page(
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 330, in discover_batch_for_page
-    data = await _run_with_retry("discover", page_url, _op)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 130, in _run_with_retry
-    raise last_error
-  File "D:\diplom\crowler\app\browser_client.py", line 107, in _run_with_retry
-    return await op()
-           ^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 300, in _op
-    await browser.open(page_url)
-          ^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\pydantic\main.py", line 1026, in __getattr__
-    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
-AttributeError: 'BrowserSession' object has no attribute 'open'
-2026-04-09 15:19:20 | ERROR    | app.pipeline | [DISCOVER] failed for page https://simplicity.com/
-Traceback (most recent call last):
-  File "D:\diplom\crowler\app\pipeline.py", line 179, in discover_iteration
-    batch = await discover_batch_for_page(
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 330, in discover_batch_for_page
-    data = await _run_with_retry("discover", page_url, _op)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 130, in _run_with_retry
-    raise last_error
-  File "D:\diplom\crowler\app\browser_client.py", line 107, in _run_with_retry
-    return await op()
-           ^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 300, in _op
-    await browser.open(page_url)
-          ^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\pydantic\main.py", line 1026, in __getattr__
-    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
-AttributeError: 'BrowserSession' object has no attribute 'open'
-2026-04-09 15:20:31 | ERROR    | browser_use.BrowserSession🅑 86ee 🅣 DE | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#7152(?▶ NavigateToUrlEvent#f0fe 🏃) timed out after 30.0s and interrupted any processing of 1 child events
-2026-04-09 15:20:54 | ERROR    | browser_use.BrowserSession🅑 86ee 🅣 DE | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#6784(?▶ ScreenshotEvent#180e 🏃) timed out after 15.0s
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#5344(?▶ ScreenshotEvent#76a1 🏃) timed out after 15.0s
+2026-04-13 15:33:59 | ERROR    | browser_use.BrowserSession🅑 8915 🅣 63 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#5344(?▶ ScreenshotEvent#9723 🏃) timed out after 15.0s
 Traceback (most recent call last):
   File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
     return fut.result()
@@ -412,8 +179,8 @@ Traceback (most recent call last):
     await self.execute_handler(event, handler, timeout=timeout)
   File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
     raise handler_timeout_error from e
-TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#6784(?▶ ScreenshotEvent#180e 🏃) timed out after 15.0s
-2026-04-09 15:21:27 | ERROR    | browser_use.BrowserSession🅑 86ee 🅣 DE | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#6784(?▶ ScreenshotEvent#2dd1 🏃) timed out after 15.0s
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#5344(?▶ ScreenshotEvent#9723 🏃) timed out after 15.0s
+2026-04-13 15:34:58 | ERROR    | browser_use.BrowserSession🅑 b055 🅣 0A | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#7600(?▶ ScreenshotEvent#ba9f 🏃) timed out after 15.0s
 Traceback (most recent call last):
   File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
     return fut.result()
@@ -470,26 +237,41 @@ Traceback (most recent call last):
     await self.execute_handler(event, handler, timeout=timeout)
   File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
     raise handler_timeout_error from e
-TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#6784(?▶ ScreenshotEvent#2dd1 🏃) timed out after 15.0s
-2026-04-09 15:29:07 | ERROR    | browser_use.tools.service | Action 'extract' failed with error: Error executing action extract: 
-2026-04-09 15:32:45 | ERROR    | asyncio | Exception in callback create_task_with_error_handling.<locals>._handle_task_exception(<Task finishe...not found.'})>) at D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py:743
-handle: <Handle create_task_with_error_handling.<locals>._handle_task_exception(<Task finishe...not found.'})>) at D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py:743>
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#7600(?▶ ScreenshotEvent#ba9f 🏃) timed out after 15.0s
+2026-04-13 15:50:39 | ERROR    | browser_use.BrowserSession🅑 2ade 🅣 0F | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#6368(?▶ NavigateToUrlEvent#5d77 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 15:51:17 | ERROR    | browser_use.BrowserSession🅑 68f1 🅣 D6 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#1712(?▶ ScreenshotEvent#cdca 🏃) timed out after 15.0s
 Traceback (most recent call last):
-  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 84, in _run
-    self._context.run(self._callback, *self._args)
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 770, in _handle_task_exception
-    raise exc_to_raise
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\dom\service.py", line 367, in _get_ax_tree_for_all_frames
-    ax_trees = await asyncio.gather(*ax_tree_requests)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\accessibility\library.py", line 87, in getFullAXTree
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
     await self._client.send_raw(
   File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
     return await future
            ^^^^^^^^^^^^
-RuntimeError: {'code': -32602, 'message': 'Frame with the given frameId is not found.'}
-2026-04-09 15:32:45 | ERROR    | browser_use.BrowserSession🅑 61c4 🅣 F9 | Failed to build DOM tree without highlights: CDP requests failed or timed out: ax_tree
-2026-04-09 15:32:45 | ERROR    | browser_use.BrowserSession🅑 61c4 🅣 F9 | Exception in background task [build_dom_tree]: TimeoutError: CDP requests failed or timed out: ax_tree
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
 Traceback (most recent call last):
   File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
     result = await func(*args, **kwargs)
@@ -497,50 +279,665 @@ Traceback (most recent call last):
   File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
     return await func(*args, **kwargs)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 559, in _build_dom_tree_without_highlights
-    self.current_dom_state, self.enhanced_dom_tree, timing_info = await self._dom_service.get_serialized_dom_tree(
-                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
-    return await func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\dom\service.py", line 1051, in get_serialized_dom_tree
-    enhanced_dom_tree, dom_tree_timing = await self.get_dom_tree(
-                                         ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
-    return await func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\dom\service.py", line 679, in get_dom_tree
-    trees = await self._get_all_trees(target_id)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\dom\service.py", line 605, in _get_all_trees
-    raise TimeoutError(f'CDP requests failed or timed out: {", ".join(failed)}')
-TimeoutError: CDP requests failed or timed out: ax_tree
-2026-04-09 16:26:57 | ERROR    | browser_use.tools.service | Action 'extract' failed with error: Error executing action extract: 'charmap' codec can't encode character '\xb2' in position 2456: character maps to <undefined>
-2026-04-09 17:08:16 | ERROR    | browser_use.tools.service | Action 'extract' failed with error: Error executing action extract: 
-2026-04-09 17:15:16 | ERROR    | browser_use.Agent🅰 8e90 ⇢ 🅑 7a07 🅣 8F | ❌ Result failed 4/4 times: LLM call timed out after 75 seconds. Keep your thinking and output short.
-2026-04-09 17:15:16 | ERROR    | browser_use.Agent🅰 8e90 ⇢ 🅑 7a07 🅣 8F | ❌ Stopping due to 3 consecutive failures
-2026-04-09 17:22:38 | ERROR    | browser_use.Agent🅰 e660 ⇢ 🅑 ee21 🅣 08 | ❌ Result failed 4/4 times: LLM call timed out after 75 seconds. Keep your thinking and output short.
-2026-04-09 17:22:38 | ERROR    | browser_use.Agent🅰 e660 ⇢ 🅑 ee21 🅣 08 | ❌ Stopping due to 3 consecutive failures
-2026-04-09 17:25:13 | ERROR    | browser_use.tools.service | Action 'extract' failed with error: Error executing action extract: 
-2026-04-09 17:31:33 | ERROR    | browser_use.Agent🅰 4da7 ⇢ 🅑 f68b 🅣 D7 | ❌ Result failed 4/4 times: LLM call timed out after 75 seconds. Keep your thinking and output short.
-2026-04-09 17:31:33 | ERROR    | browser_use.Agent🅰 4da7 ⇢ 🅑 f68b 🅣 D7 | ❌ Stopping due to 3 consecutive failures
-2026-04-09 17:31:33 | ERROR    | app.pipeline | [ERROR] processing failed for https://grasser.ru/vykrojki/vykroyki-dlya-zhenshchin/kardigan-vykroyka-1306/
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#1712(?▶ ScreenshotEvent#cdca 🏃) timed out after 15.0s
+2026-04-13 15:54:12 | ERROR    | browser_use.BrowserSession🅑 66fa 🅣 00 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#2736(?▶ NavigateToUrlEvent#849d 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 15:54:54 | ERROR    | browser_use.BrowserSession🅑 bc41 🅣 BF | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#6800(?▶ ScreenshotEvent#2874 🏃) timed out after 15.0s
 Traceback (most recent call last):
-  File "D:\diplom\crowler\app\pipeline.py", line 260, in process_one_url
-    card = await extract_product(url)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 369, in extract_product
-    return await _run_with_retry("extract", product_url, _op)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 130, in _run_with_retry
-    raise last_error
-  File "D:\diplom\crowler\app\browser_client.py", line 107, in _run_with_retry
-    return await op()
-           ^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 363, in _op
-    card = _to_product_card(data)
-           ^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\diplom\crowler\app\browser_client.py", line 242, in _to_product_card
-    image_urls = dedupe_preserve_order(data.image_urls)
-                                       ^^^^^^^^^^^^^^^
-AttributeError: 'function' object has no attribute 'image_urls'
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#6800(?▶ ScreenshotEvent#2874 🏃) timed out after 15.0s
+2026-04-13 16:02:17 | ERROR    | browser_use.BrowserSession🅑 d2dd 🅣 F1 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#4800(?▶ NavigateToUrlEvent#ac31 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 16:03:04 | ERROR    | browser_use.BrowserSession🅑 8158 🅣 63 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#3520(?▶ ScreenshotEvent#1332 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#3520(?▶ ScreenshotEvent#1332 🏃) timed out after 15.0s
+2026-04-13 16:21:22 | ERROR    | browser_use.BrowserSession🅑 c7c2 🅣 2C | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#1776(?▶ NavigateToUrlEvent#2053 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 16:21:45 | ERROR    | browser_use.BrowserSession🅑 c7c2 🅣 2C | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#7632(?▶ ScreenshotEvent#5c23 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#7632(?▶ ScreenshotEvent#5c23 🏃) timed out after 15.0s
+2026-04-13 16:22:18 | ERROR    | browser_use.BrowserSession🅑 c7c2 🅣 2C | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#7632(?▶ ScreenshotEvent#546d 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#7632(?▶ ScreenshotEvent#546d 🏃) timed out after 15.0s
+2026-04-13 16:22:51 | ERROR    | browser_use.BrowserSession🅑 c7c2 🅣 2C | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#7632(?▶ ScreenshotEvent#0913 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#7632(?▶ ScreenshotEvent#0913 🏃) timed out after 15.0s
+2026-04-13 16:22:52 | ERROR    | browser_use.Agent🅰 1948 ⇢ 🅑 c7c2 🅣 2C | ❌ Result failed 3/3 times: 
+2026-04-13 16:22:52 | ERROR    | browser_use.Agent🅰 1948 ⇢ 🅑 c7c2 🅣 2C | ❌ Stopping due to 2 consecutive failures
+2026-04-13 16:23:38 | ERROR    | browser_use.BrowserSession🅑 2ee1 🅣 C2 | ❌ Navigation failed: Event handler browser_use.browser.watchdog_base.BrowserSession.on_NavigateToUrlEvent#1936(?▶ NavigateToUrlEvent#fc9e 🏃) timed out after 30.0s and interrupted any processing of 1 child events
+2026-04-13 16:33:18 | ERROR    | browser_use.BrowserSession🅑 4498 🅣 E7 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#1872(?▶ ScreenshotEvent#1611 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#1872(?▶ ScreenshotEvent#1611 🏃) timed out after 15.0s
+2026-04-13 16:37:00 | ERROR    | browser_use.BrowserSession🅑 e334 🅣 AD | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#2896(?▶ ScreenshotEvent#833f 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#2896(?▶ ScreenshotEvent#833f 🏃) timed out after 15.0s
+2026-04-13 16:46:44 | ERROR    | browser_use.BrowserSession🅑 ff93 🅣 24 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#3792(?▶ ScreenshotEvent#e209 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#3792(?▶ ScreenshotEvent#e209 🏃) timed out after 15.0s
+2026-04-13 16:56:45 | ERROR    | browser_use.BrowserSession🅑 9eea 🅣 53 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#6880(?▶ ScreenshotEvent#b677 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#6880(?▶ ScreenshotEvent#b677 🏃) timed out after 15.0s
+2026-04-13 17:47:59 | ERROR    | browser_use.BrowserSession🅑 4ff2 🅣 C2 | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#8608(?▶ ScreenshotEvent#fe45 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#8608(?▶ ScreenshotEvent#fe45 🏃) timed out after 15.0s
+2026-04-13 18:09:26 | ERROR    | browser_use.BrowserSession🅑 5f72 🅣 8D | Exception in background task [capture_screenshot]: TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#8752(?▶ ScreenshotEvent#1135 🏃) timed out after 15.0s
+Traceback (most recent call last):
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdog_base.py", line 153, in unique_handler
+    result = await actual_handler(event)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\screenshot_watchdog.py", line 78, in on_ScreenshotEvent
+    result = await cdp_session.cdp_client.send.Page.captureScreenshot(params=params, session_id=cdp_session.session_id)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\cdp\page\library.py", line 137, in captureScreenshot
+    await self._client.send_raw(
+  File "D:\diplom\crowler\.venv\Lib\site-packages\cdp_use\client.py", line 389, in send_raw
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1128, in execute_handler
+    result_value: Any = await asyncio.wait_for(handler_task, timeout=event_result.timeout)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\a.varlamova\AppData\Local\Programs\Python\Python311\Lib\asyncio\tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\utils.py", line 401, in wrapper
+    result = await func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\observability.py", line 73, in async_wrapper
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\browser_use\browser\watchdogs\dom_watchdog.py", line 700, in _capture_clean_screenshot
+    screenshot_b64 = await screenshot_event.event_result(raise_if_any=True, raise_if_none=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 574, in event_result
+    valid_results = await self.event_results_filtered(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 516, in event_results_filtered
+    raise original_error
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 490, in event_results_filtered
+    await event_result
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\models.py", line 889, in wait_for_handler_to_complete_and_return_result
+    raise self.error if isinstance(self.error, BaseException) else Exception(self.error)  # pyright: ignore[reportUnnecessaryIsInstance]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1070, in _execute_handlers
+    await self.execute_handler(event, handler, timeout=timeout)
+  File "D:\diplom\crowler\.venv\Lib\site-packages\bubus\service.py", line 1194, in execute_handler
+    raise handler_timeout_error from e
+TimeoutError: Event handler browser_use.browser.watchdog_base.ScreenshotWatchdog.on_ScreenshotEvent#8752(?▶ ScreenshotEvent#1135 🏃) timed out after 15.0s

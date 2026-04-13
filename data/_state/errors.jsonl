@@ -1,7 +1,0 @@
-{"phase": "discover", "site": "vikisews", "page_url": "https://vikisews.com/vykrojki/vse-vykrojki/", "error": "'BrowserSession' object has no attribute 'open'"}
-{"phase": "discover", "site": "simplicity", "page_url": "https://simplicity.com/", "error": "'BrowserSession' object has no attribute 'open'"}
-{"phase": "discover", "site": "grasser_men", "page_url": "https://grasser.ru/vykrojki/vykroyki-dlya-zhenshchin/", "error": "'BrowserSession' object has no attribute 'open'"}
-{"phase": "discover", "site": "grasser_men", "page_url": "https://grasser.ru/vykrojki/muzhskie-vykrojki/", "error": "'BrowserSession' object has no attribute 'open'"}
-{"phase": "discover", "site": "vikisews", "page_url": "https://vikisews.com/vykrojki/vse-vykrojki/", "error": "'BrowserSession' object has no attribute 'open'"}
-{"phase": "discover", "site": "simplicity", "page_url": "https://simplicity.com/", "error": "'BrowserSession' object has no attribute 'open'"}
-{"phase": "process", "url": "https://grasser.ru/vykrojki/vykroyki-dlya-zhenshchin/kardigan-vykroyka-1306/", "error": "'function' object has no attribute 'image_urls'"}

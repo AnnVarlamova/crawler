@@ -62,12 +62,10 @@ def setup_logging(log_level: str | None = None) -> None:
     )
     json_formatter = JsonLineFormatter()
 
-    # Консоль
     console_handler = logging.StreamHandler()
     console_handler.setLevel(level)
     console_handler.setFormatter(text_formatter)
 
-    # Общий текстовый лог
     file_handler = RotatingFileHandler(
         LOG_FILE,
         maxBytes=5 * 1024 * 1024,
@@ -77,7 +75,6 @@ def setup_logging(log_level: str | None = None) -> None:
     file_handler.setLevel(level)
     file_handler.setFormatter(text_formatter)
 
-    # Только ошибки
     error_file_handler = RotatingFileHandler(
         ERROR_LOG_FILE,
         maxBytes=5 * 1024 * 1024,
@@ -87,7 +84,6 @@ def setup_logging(log_level: str | None = None) -> None:
     error_file_handler.setLevel(logging.ERROR)
     error_file_handler.setFormatter(text_formatter)
 
-    # JSONL лог
     json_file_handler = RotatingFileHandler(
         JSON_LOG_FILE,
         maxBytes=10 * 1024 * 1024,
@@ -102,6 +98,5 @@ def setup_logging(log_level: str | None = None) -> None:
     root_logger.addHandler(error_file_handler)
     root_logger.addHandler(json_file_handler)
 
-    # Шумные библиотеки приглушаем
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
