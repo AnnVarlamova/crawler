@@ -17,11 +17,10 @@ logger = logging.getLogger(__name__)
 runlog = logging.getLogger("discovery.run")
 
 
-async def _scroll_step(page, step_px: int = 650) -> None:
+async def _scroll_step(page, step_px: int = 800) -> None:
     await page.evaluate(
         """(step) => {
-            const y = window.scrollY || document.documentElement.scrollTop || 0;
-            window.scrollTo({ top: y + step, behavior: 'instant' });
+            window.scrollBy({ top: step, behavior: 'instant' });
         }""",
         step_px,
     )
@@ -56,14 +55,24 @@ async def run(browser: Browser, spec: dict) -> list[str]:
 
         await safe_goto(
             page,
-            start_url,
-            primary_wait_until="commit",
-            fallback_wait_until="load",
-            primary_timeout_ms=45000,
-            fallback_timeout_ms=60000,
+            "https://vikisews.com/",
+            primary_wait_until="domcontentloaded",
+            fallback_wait_until="commit",
         )
-        await wait_ms(page, 2500)
-        await _wait_for_listing(page)
+        await safe_goto(
+            page,
+            "https://vikisews.com/vykrojki/",
+            primary_wait_until="domcontentloaded",
+            fallback_wait_until="commit",
+        )
+        # 1. стабильный переход
+        await safe_goto(
+            page,
+            start_url,
+            primary_wait_until="domcontentloaded",
+            fallback_wait_until="commit",
+        )
+
 
         all_links: list[str] = []
         seen = set()
@@ -74,20 +83,19 @@ async def run(browser: Browser, spec: dict) -> list[str]:
         while stagnant_rounds < 5:
             links = await collect_unique_links(
                 page=page,
-                selector="#upload-content a.slide-link[href], a.slide-link[href]",
+                selector="a.slide-link[href]",
                 href_filter=lambda href: href.startswith("https://vikisews.com/vykrojki/"),
             )
 
-            fresh_links: list[str] = []
+            fresh_links = []
             for link in links:
                 if link not in seen:
                     seen.add(link)
                     all_links.append(link)
                     fresh_links.append(link)
 
-            written = 0
             if fresh_links:
-                written = save_dataset_links(
+                save_dataset_links(
                     site=site,
                     category=category,
                     source_page=start_url,
@@ -95,14 +103,6 @@ async def run(browser: Browser, spec: dict) -> list[str]:
                 )
 
             current_count = len(all_links)
-            logger.info(
-                "[vikisews] category=%s total=%s fresh=%s written=%s stagnant_rounds=%s",
-                category,
-                current_count,
-                len(fresh_links),
-                written,
-                stagnant_rounds,
-            )
 
             if current_count == last_count:
                 stagnant_rounds += 1
@@ -111,10 +111,10 @@ async def run(browser: Browser, spec: dict) -> list[str]:
 
             last_count = current_count
 
-            await _scroll_step(page, step_px=650)
-            await wait_ms(page, 1000)
+            await _scroll_step(page, step_px=800)
+            await page.wait_for_timeout(1200)
 
-        runlog.info("DONE  vikisews %s total=%s", category, len(all_links))
+        runlog.info("DONE vikisews %s total=%s", category, len(all_links))
         return all_links
 
     finally:

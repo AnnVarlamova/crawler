@@ -35,6 +35,13 @@ async def run(browser: Browser, spec: dict) -> list[str]:
         logger.info("[shkatulka] open %s", start_url)
         runlog.info("START shkatulka %s", category)
 
+        await safe_goto(
+            page,
+            "https://shkatulka-sew.ru/",
+            primary_wait_until="domcontentloaded",
+            fallback_wait_until="commit",
+        )
+        await wait_ms(page, 1200)
         await safe_goto(page, start_url, primary_wait_until="domcontentloaded", fallback_wait_until="commit")
         await wait_ms(page, 1200)
         await _wait_for_listing(page)

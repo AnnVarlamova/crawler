@@ -17,6 +17,16 @@ logger = logging.getLogger(__name__)
 runlog = logging.getLogger("discovery.run")
 
 
+BRANDS = [
+    "Butterick",
+    "Know Me",
+    "McCall's",
+    "New Look",
+    "Simplicity",
+    "Vogue Patterns",
+]
+
+
 async def _dismiss_cookie_if_present(page: Page) -> None:
     for text in ["Accept", "I Agree", "Got it"]:
         try:
@@ -43,39 +53,80 @@ async def _wait_for_products_or_filters(page: Page) -> None:
         except Exception:
             continue
 
-    # Последний шанс — просто дать странице ещё подышать
     await wait_ms(page, 2500)
 
 
-async def _select_all_brands_except_burda(page: Page) -> None:
-    brands = page.locator("a.navList-action--checkbox")
-    count = await brands.count()
+async def _select_single_brand(page: Page, brand_name: str) -> None:
+    locator = page.locator(
+        f'a.navList-action--checkbox[data-name="{brand_name}"]'
+    )
 
-    logger.info("[simplicity] brand options found=%s", count)
+    count = await locator.count()
+    logger.info("[simplicity] select brand=%s found=%s", brand_name, count)
 
     if count == 0:
+        logger.warning("[simplicity] brand not found: %s", brand_name)
         return
 
+    item = locator.first
+
+    # 👇 текущий список до применения фильтра
+    before = await _get_first_product_href(page)
+
+    # 👇 скроллим (иногда обязательно)
+    await item.scroll_into_view_if_needed()
+
+    # 👇 жёсткое применение через DOM
+    await item.evaluate("""
+        (el) => {
+            // пробуем найти input внутри
+            const input = el.querySelector('input[type="checkbox"]');
+
+            if (input) {
+                input.checked = true;
+
+                // триггерим все события которые обычно слушают такие сайты
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                input.dispatchEvent(new Event('click', { bubbles: true }));
+            } else {
+                // fallback — кликаем сам элемент
+                el.click();
+            }
+        }
+    """)
+
+    # 👇 ждём обновления товаров
+    for _ in range(20):
+        await wait_ms(page, 300)
+        after = await _get_first_product_href(page)
+        if after and after != before:
+            logger.info("[simplicity] brand applied=%s", brand_name)
+            return
+
+    logger.warning("[simplicity] brand NOT applied=%s", brand_name)
+
+
+async def _clear_all_brands(page: Page) -> None:
+    locators = page.locator("a.navList-action--checkbox input[type='checkbox']")
+
+    count = await locators.count()
+    logger.info("[simplicity] clearing brands count=%s", count)
+
     for i in range(count):
-        item = brands.nth(i)
-
-        entity_id = await item.get_attribute("data-entity-id")
-        cls = ((await item.get_attribute("class")) or "").lower()
-
-        if entity_id == "40":
-            continue
-
-        if "disabled" in cls:
-            continue
+        el = locators.nth(i)
 
         try:
-            await item.click(timeout=1500)
-            await wait_ms(page, 250)
+            checked = await el.is_checked()
         except Exception:
-            logger.warning("[simplicity] could not click brand entity_id=%s", entity_id)
+            checked = False
 
-    # На всякий случай дожидаемся перерисовки после фильтров
-    await wait_ms(page, 2500)
+        if checked:
+            await el.evaluate("""
+                (input) => {
+                    input.checked = false;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            """)
 
 
 async def _scroll_current_page(page: Page) -> None:
@@ -144,60 +195,82 @@ async def run(browser: Browser, spec: dict) -> list[str]:
         logger.info("[simplicity] open %s", start_url)
         runlog.info("START simplicity %s", category)
 
-        await safe_goto(page, start_url, primary_wait_until="domcontentloaded", fallback_wait_until="commit")
-        await wait_ms(page, 2500)
-
-        await _dismiss_cookie_if_present(page)
-        await _wait_for_products_or_filters(page)
-        await _select_all_brands_except_burda(page)
-        await _wait_for_products_or_filters(page)
-
         all_links: list[str] = []
         seen = set()
-        page_index = 1
 
-        while True:
-            logger.info("[simplicity] page=%s scroll before collect", page_index)
-            await _scroll_current_page(page)
+        # 🔥 идём по каждому бренду отдельно
+        for brand in BRANDS:
+            logger.info("[simplicity] processing brand=%s", brand)
 
-            links = await _get_page_links(page)
-            first_href = links[0] if links else None
+            # 🔥 НОВАЯ страница вместо переиспользования старой
+            await safe_close_context(context)
+            context, page = await new_page(browser)
 
-            new_on_page = 0
-            fresh_links: list[str] = []
+            await safe_goto(
+                page,
+                start_url,
+                primary_wait_until="domcontentloaded",
+                fallback_wait_until="commit",
+            )
+            await wait_ms(page, 2500)
 
-            for link in links:
-                if link not in seen:
-                    seen.add(link)
-                    all_links.append(link)
-                    fresh_links.append(link)
-                    new_on_page += 1
+            await _dismiss_cookie_if_present(page)
+            await _wait_for_products_or_filters(page)
 
-            written = 0
-            if fresh_links:
-                written = save_dataset_links(
-                    site=site,
-                    category=category,
-                    source_page=start_url,
-                    links=fresh_links,
+            await _clear_all_brands(page)
+            await _select_single_brand(page, brand)
+            await _wait_for_products_or_filters(page)
+
+            page_index = 1
+
+            while True:
+                logger.info(
+                    "[simplicity] brand=%s page=%s scroll before collect",
+                    brand,
+                    page_index,
                 )
 
-            logger.info(
-                "[simplicity] page=%s first_href=%s found=%s new_on_page=%s written=%s total=%s",
-                page_index,
-                first_href,
-                len(links),
-                new_on_page,
-                written,
-                len(all_links),
-            )
+                await _scroll_current_page(page)
 
-            moved = await _click_next_and_wait_for_new_products(page)
-            if not moved:
-                logger.info("[simplicity] stop at page=%s", page_index)
-                break
+                links = await _get_page_links(page)
+                first_href = links[0] if links else None
 
-            page_index += 1
+                new_on_page = 0
+                fresh_links: list[str] = []
+
+                for link in links:
+                    if link not in seen:
+                        seen.add(link)
+                        all_links.append(link)
+                        fresh_links.append(link)
+                        new_on_page += 1
+
+                written = 0
+                if fresh_links:
+                    written = save_dataset_links(
+                        site=site,
+                        category=category,
+                        source_page=f"{start_url}#brand={brand}",
+                        links=fresh_links,
+                    )
+
+                logger.info(
+                    "[simplicity] brand=%s page=%s first_href=%s found=%s new_on_page=%s written=%s total=%s",
+                    brand,
+                    page_index,
+                    first_href,
+                    len(links),
+                    new_on_page,
+                    written,
+                    len(all_links),
+                )
+
+                moved = await _click_next_and_wait_for_new_products(page)
+                if not moved:
+                    logger.info("[simplicity] brand=%s stop at page=%s", brand, page_index)
+                    break
+
+                page_index += 1
 
         runlog.info("DONE  simplicity %s total=%s", category, len(all_links))
         return all_links
