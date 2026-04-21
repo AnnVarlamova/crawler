@@ -110,11 +110,12 @@ SITE_SPECS: dict[str, dict] = {
         "category": "muzhskie-vykrojki",
     },
     "shkatulka_dresses": {
-        "type": "browser",
-        "handler": "shkatulka",
-        "site": "shkatulka",
-        "start_url": "https://shkatulka-sew.ru/category/platya/",
-        "category": "platya",
+    "type": "browser",
+    "handler": "shkatulka",
+    "site": "shkatulka",
+    "start_url": "https://shkatulka-sew.ru/category/platya/",
+    "category": "platya",
+    "section_gender": "women",
     },
     "shkatulka_tops": {
         "type": "browser",
@@ -122,6 +123,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/bluzki-topy/",
         "category": "bluzki-topy",
+        "section_gender": "women",
     },
     "shkatulka_pants": {
         "type": "browser",
@@ -129,6 +131,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/bryuki1/",
         "category": "bryuki1",
+        "section_gender": "women",
     },
     "shkatulka_skirts": {
         "type": "browser",
@@ -136,6 +139,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/yubki-2/",
         "category": "yubki-2",
+        "section_gender": "women",
     },
     "shkatulka_hoodies": {
         "type": "browser",
@@ -143,6 +147,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/tolstovki-svitshoty-hudi/",
         "category": "tolstovki-svitshoty-hudi",
+        "section_gender": "women",
     },
     "shkatulka_outerwear": {
         "type": "browser",
@@ -150,6 +155,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/verhnyaya-odejda/",
         "category": "verhnyaya-odejda",
+        "section_gender": "women",
     },
     "shkatulka_jackets": {
         "type": "browser",
@@ -157,6 +163,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/jakety-jilety/",
         "category": "jakety-jilety",
+        "section_gender": "women",
     },
     "shkatulka_overalls": {
         "type": "browser",
@@ -164,6 +171,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/kombinezony-polukombinezony/",
         "category": "kombinezony-polukombinezony",
+        "section_gender": "women",
     },
     "shkatulka_homewear_women": {
         "type": "browser",
@@ -171,6 +179,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/bele-kupalniki-domashnyaya-odejda/",
         "category": "bele-kupalniki-domashnyaya-odezhda",
+        "section_gender": "women",
     },
     "shkatulka_homewear_men": {
         "type": "browser",
@@ -178,6 +187,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/bele-domashnyaya-odejda/",
         "category": "bele-domashnyaya-odezhda",
+        "section_gender": "men",
     },
     "shkatulka_men_shirts": {
         "type": "browser",
@@ -185,6 +195,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/rubashki-futbolki/",
         "category": "rubashki-futbolki",
+        "section_gender": "men",
     },
     "shkatulka_men_hoodies": {
         "type": "browser",
@@ -192,6 +203,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/tolstovki-hudi-2/",
         "category": "tolstovki-hudi-2",
+        "section_gender": "men",
     },
     "shkatulka_men_pants": {
         "type": "browser",
@@ -199,6 +211,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/bryuki-shorty/",
         "category": "bryuki-shorty",
+        "section_gender": "men",
     },
     "shkatulka_men_outerwear": {
         "type": "browser",
@@ -206,6 +219,7 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/verhnyaya-odejda-3/",
         "category": "verhnyaya-odejda-3",
+        "section_gender": "men",
     },
     "shkatulka_men_jackets": {
         "type": "browser",
@@ -213,14 +227,6 @@ SITE_SPECS: dict[str, dict] = {
         "site": "shkatulka",
         "start_url": "https://shkatulka-sew.ru/category/jilety-pidjaki/",
         "category": "jilety-pidjaki",
-    },
-
-    # Заглушка под пагинацию
-    "pagination_stub_example": {
-        "type": "pagination",
-        "handler": "stub",
-        "site": "pagination_stub",
-        "start_url": "https://example.com/catalog/",
-        "category": "stub-category",
+        "section_gender": "men",
     },
 }

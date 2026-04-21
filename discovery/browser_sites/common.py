@@ -17,7 +17,7 @@ def dataset_file(site: str, category: str) -> Path:
 
 
 async def new_page(browser: Browser) -> tuple[BrowserContext, Page]:
-    context = await browser.new_context(viewport={"width": 1440, "height": 2200})
+    context = await browser.new_context(viewport={"width": 1440, "height": 900})
     page = await context.new_page()
     page.set_default_timeout(PLAYWRIGHT_TIMEOUT_MS)
     return context, page

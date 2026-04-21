@@ -15,10 +15,12 @@ async def run_browser_spec(spec_name: str, spec: dict) -> list[str]:
         args=["--disable-quic"]
     )
         try:
-            '''if handler_name == "simplicity":
-                return await simplicity.run(browser, spec)
+            if handler_name == "simplicity":
+                pass
+                # return await simplicity.run(browser, spec)
             if handler_name == "vikisews":
-                return await vikisews.run(browser, spec)'''
+                pass
+                # return await vikisews.run(browser, spec)
             if handler_name == "shkatulka":
                 return await shkatulka.run(browser, spec)
 
