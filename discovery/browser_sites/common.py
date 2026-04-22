@@ -16,8 +16,8 @@ def dataset_file(site: str, category: str) -> Path:
     return DATASET_DIR/ "links" / slugify(site) / slugify(category) / "products.jsonl"
 
 
-async def new_page(browser: Browser) -> tuple[BrowserContext, Page]:
-    context = await browser.new_context(viewport={"width": 1440, "height": 900})
+async def new_page(browser: Browser, height=900) -> tuple[BrowserContext, Page]:
+    context = await browser.new_context(viewport={"width": 1440, "height": height})
     page = await context.new_page()
     page.set_default_timeout(PLAYWRIGHT_TIMEOUT_MS)
     return context, page

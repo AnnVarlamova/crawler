@@ -24,6 +24,11 @@ SITE_ERROR_LIMIT = int(os.getenv("SITE_ERROR_LIMIT", "4"))
 PLAYWRIGHT_HEADLESS = os.getenv("PLAYWRIGHT_HEADLESS", "true").lower() == "true"
 PLAYWRIGHT_TIMEOUT_MS = int(os.getenv("PLAYWRIGHT_TIMEOUT_MS", "30000"))
 
+VPN_SITES = {
+    "simplicity",
+    # "vikisews", если потом понадобится
+}
+
 SITE_SPECS: dict[str, dict] = {
     "simplicity_women": {
         "type": "browser",

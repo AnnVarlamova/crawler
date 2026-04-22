@@ -8,8 +8,9 @@ from collections import defaultdict
 
 from discovery import runtime
 from discovery.browser_sites.runner import run_browser_spec
-from discovery.config import DISCOVERED_FILE, ERRORS_FILE, SITE_ERROR_LIMIT, SITE_SPECS
+from discovery.config import DISCOVERED_FILE, ERRORS_FILE, SITE_ERROR_LIMIT, SITE_SPECS, VPN_SITES
 from discovery.logging_setup import configure_logging
+from discovery.net import detect_country_code, is_ru_country
 from discovery.state import load_state
 from discovery.utils import append_jsonl, append_jsonl_unique, get_site_host
 
@@ -41,10 +42,20 @@ def record_site_error(state, site_host: str) -> int:
     return current
 
 
-def parse_args() -> tuple[set[str], bool, str]:
+def should_skip_by_country(site_name: str, is_ru: bool) -> bool:
+    is_vpn_site = site_name in VPN_SITES
+
+    if is_ru:
+        # В RU запускаем только обычные сайты
+        return is_vpn_site
+
+    # В non-RU запускаем только VPN-сайты
+    return not is_vpn_site
+
+
+def parse_args() -> tuple[set[str], bool]:
     requested_specs: set[str] = set()
     verbose = False
-    net_mode = "ru"
 
     argv = sys.argv[1:]
     i = 0
@@ -55,15 +66,10 @@ def parse_args() -> tuple[set[str], bool, str]:
         elif argv[i] == "--verbose":
             verbose = True
             i += 1
-        elif argv[i] == "--net" and i + 1 < len(argv):
-            net_mode = argv[i + 1].strip().lower()
-            if net_mode not in {"ru", "en"}:
-                raise ValueError(f"Unsupported --net value: {net_mode}. Use ru or en.")
-            i += 2
         else:
             i += 1
 
-    return requested_specs, verbose, net_mode
+    return requested_specs, verbose
 
 
 async def run_pagination_stub(spec_name: str, spec: dict) -> list[str]:
@@ -73,7 +79,7 @@ async def run_pagination_stub(spec_name: str, spec: dict) -> list[str]:
 
 
 async def async_main() -> int:
-    requested_specs, verbose, net_mode = parse_args()
+    requested_specs, verbose = parse_args()
     configure_logging(verbose=verbose)
 
     state = load_state()
@@ -81,17 +87,24 @@ async def async_main() -> int:
     failures: list[dict] = []
     site_failures: dict[str, list[str]] = defaultdict(list)
 
+    country_code = await detect_country_code()
+    is_ru = is_ru_country(country_code)
+
     runlog.info(
-        "START discovery requested=%s net=%s",
+        "START discovery requested=%s country=%s ru=%s",
         ",".join(sorted(requested_specs)) if requested_specs else "all",
-        net_mode,
+        country_code or "unknown",
+        is_ru,
     )
     logger.info("Starting discovery pipeline")
-    logger.info("Specs to run: %s", ", ".join(requested_specs) if requested_specs else "all")
-    logger.info("Network mode: %s", net_mode)
+    logger.info("Specs to run: %s", ", ".join(sorted(requested_specs)) if requested_specs else "all")
+    logger.info("Detected country: %s", country_code or "unknown")
+    logger.info("RU mode: %s", is_ru)
+    logger.info("VPN sites: %s", ", ".join(sorted(VPN_SITES)) if VPN_SITES else "-")
 
     total_specs = 0
     success_specs = 0
+    skipped_specs = 0
 
     for spec_name, spec in SITE_SPECS.items():
         if runtime.STOP_REQUESTED:
@@ -102,33 +115,69 @@ async def async_main() -> int:
 
         total_specs += 1
 
+        site_name = spec["site"]
         site_host = get_site_host(spec["start_url"])
+
+        logger.info(
+            "[CHECK] spec=%s site=%s country=%s is_ru=%s vpn_site=%s",
+            spec_name,
+            site_name,
+            country_code or "unknown",
+            is_ru,
+            site_name in VPN_SITES,
+        )
+
+        if should_skip_by_country(site_name, is_ru):
+            logger.info(
+                "[SKIP] spec=%s site=%s skipped_by_country country=%s is_ru=%s vpn_site=%s",
+                spec_name,
+                site_name,
+                country_code or "unknown",
+                is_ru,
+                site_name in VPN_SITES,
+            )
+            runlog.info(
+                "SKIP  %s %s country=%s is_ru=%s vpn_site=%s",
+                site_name,
+                spec_name,
+                country_code or "unknown",
+                is_ru,
+                site_name in VPN_SITES,
+            )
+            skipped_specs += 1
+            continue
+
         if is_site_blocked(state, site_host):
             msg = f"blocked site={site_host} spec={spec_name}"
             logger.warning("[SKIP] %s", msg)
-            runlog.info("SKIP  %s %s blocked", spec["site"], spec_name)
+            runlog.info("SKIP  %s %s blocked", site_name, spec_name)
             failures.append(
                 {
                     "spec_name": spec_name,
-                    "site": spec["site"],
+                    "site": site_name,
                     "reason": "blocked",
                 }
             )
-            site_failures[spec["site"]].append(spec_name)
+            site_failures[site_name].append(spec_name)
             continue
 
         logger.info(
-            "[RUN] spec=%s type=%s url=%s net=%s",
+            "[RUN] spec=%s type=%s url=%s country=%s",
             spec_name,
             spec["type"],
             spec["start_url"],
-            net_mode,
+            country_code or "unknown",
         )
-        runlog.info("RUN   %s %s net=%s", spec["site"], spec_name, net_mode)
+        runlog.info(
+            "RUN   %s %s country=%s",
+            site_name,
+            spec_name,
+            country_code or "unknown",
+        )
 
         try:
             if spec["type"] == "browser":
-                links = await run_browser_spec(spec_name, spec, net_mode=net_mode)
+                links = await run_browser_spec(spec_name, spec)
             elif spec["type"] == "pagination":
                 links = await run_pagination_stub(spec_name, spec)
             else:
@@ -140,7 +189,7 @@ async def async_main() -> int:
                     DISCOVERED_FILE,
                     {
                         "url": link,
-                        "site": spec["site"],
+                        "site": site_name,
                         "source_page": spec["start_url"],
                         "category": spec["category"],
                         "spec_name": spec_name,
@@ -161,7 +210,7 @@ async def async_main() -> int:
             )
             runlog.info(
                 "OK    %s %s collected=%s new_unique=%s",
-                spec["site"],
+                site_name,
                 spec_name,
                 len(links),
                 new_unique,
@@ -176,24 +225,26 @@ async def async_main() -> int:
                 {
                     "phase": "pipeline",
                     "spec_name": spec_name,
-                    "site": spec["site"],
+                    "site": site_name,
                     "page_url": spec["start_url"],
                     "error": str(e),
-                    "net_mode": net_mode,
+                    "country_code": country_code,
+                    "is_ru": is_ru,
+                    "vpn_site": site_name in VPN_SITES,
                 },
             )
 
             logger.exception("[FAIL] spec=%s", spec_name)
-            runlog.info("FAIL  %s %s error=%s", spec["site"], spec_name, str(e))
+            runlog.info("FAIL  %s %s error=%s", site_name, spec_name, str(e))
 
             failures.append(
                 {
                     "spec_name": spec_name,
-                    "site": spec["site"],
+                    "site": site_name,
                     "reason": str(e),
                 }
             )
-            site_failures[spec["site"]].append(spec_name)
+            site_failures[site_name].append(spec_name)
 
             if count >= SITE_ERROR_LIMIT:
                 logger.warning("[BLOCK] site=%s errors=%s", site_host, count)
@@ -201,7 +252,13 @@ async def async_main() -> int:
             continue
 
     logger.info("[DONE] discovery finished")
-    runlog.info("DONE  discovery success_specs=%s total_specs=%s failures=%s", success_specs, total_specs, len(failures))
+    runlog.info(
+        "DONE  discovery success_specs=%s total_specs=%s skipped_specs=%s failures=%s",
+        success_specs,
+        total_specs,
+        skipped_specs,
+        len(failures),
+    )
 
     if failures:
         logger.warning("Failed specs summary:")

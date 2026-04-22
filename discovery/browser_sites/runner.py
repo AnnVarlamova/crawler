@@ -16,11 +16,9 @@ async def run_browser_spec(spec_name: str, spec: dict) -> list[str]:
     )
         try:
             if handler_name == "simplicity":
-                pass
-                # return await simplicity.run(browser, spec)
+                return await simplicity.run(browser, spec)
             if handler_name == "vikisews":
-                pass
-                # return await vikisews.run(browser, spec)
+                return await vikisews.run(browser, spec)
             if handler_name == "shkatulka":
                 return await shkatulka.run(browser, spec)
 

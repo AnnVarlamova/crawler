@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 runlog = logging.getLogger("discovery.run")
 
 
-async def _scroll_step(page, step_px: int = 800) -> None:
+async def _scroll_step(page, step_px: int = 600) -> None:
     await page.evaluate(
         """(step) => {
             window.scrollBy({ top: step, behavior: 'instant' });
@@ -43,7 +43,7 @@ async def _wait_for_listing(page) -> None:
 
 
 async def run(browser: Browser, spec: dict) -> list[str]:
-    context, page = await new_page(browser)
+    context, page = await new_page(browser, height=1200)
 
     try:
         site = spec["site"]
@@ -111,8 +111,8 @@ async def run(browser: Browser, spec: dict) -> list[str]:
 
             last_count = current_count
 
-            await _scroll_step(page, step_px=800)
-            await page.wait_for_timeout(1200)
+            await _scroll_step(page, step_px=400)
+            await page.wait_for_timeout(2500)
 
         runlog.info("DONE vikisews %s total=%s", category, len(all_links))
         return all_links
