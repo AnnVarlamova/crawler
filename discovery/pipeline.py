@@ -8,7 +8,14 @@ from collections import defaultdict
 
 from discovery import runtime
 from discovery.browser_sites.runner import run_browser_spec
-from discovery.config import DISCOVERED_FILE, ERRORS_FILE, SITE_ERROR_LIMIT, SITE_SPECS, VPN_SITES
+from discovery.config import (
+    DISCOVERED_FILE,
+    ERRORS_FILE,
+    SITE_ERROR_LIMIT,
+    SITE_SPECS,
+    SPEC_GROUPS,
+    VPN_SITES,
+)
 from discovery.logging_setup import configure_logging
 from discovery.net import detect_country_code, is_ru_country
 from discovery.state import load_state
@@ -55,6 +62,7 @@ def should_skip_by_country(site_name: str, is_ru: bool) -> bool:
 
 def parse_args() -> tuple[set[str], bool]:
     requested_specs: set[str] = set()
+    requested_groups: set[str] = set()
     verbose = False
 
     argv = sys.argv[1:]
@@ -63,13 +71,25 @@ def parse_args() -> tuple[set[str], bool]:
         if argv[i] == "--spec" and i + 1 < len(argv):
             requested_specs.add(argv[i + 1])
             i += 2
+        elif argv[i] == "--group" and i + 1 < len(argv):
+            requested_groups.add(argv[i + 1])
+            i += 2
         elif argv[i] == "--verbose":
             verbose = True
             i += 1
         else:
             i += 1
 
-    return requested_specs, verbose
+    expanded_specs = set(requested_specs)
+
+    for group_name in requested_groups:
+        group_specs = SPEC_GROUPS.get(group_name)
+        if group_specs:
+            expanded_specs.update(group_specs)
+        else:
+            print(f"[WARN] unknown group: {group_name}")
+
+    return expanded_specs, verbose
 
 
 async def run_pagination_stub(spec_name: str, spec: dict) -> list[str]:
