@@ -41,9 +41,10 @@ def record_site_error(state, site_host: str) -> int:
     return current
 
 
-def parse_args() -> tuple[set[str], bool]:
+def parse_args() -> tuple[set[str], bool, str]:
     requested_specs: set[str] = set()
     verbose = False
+    net_mode = "ru"
 
     argv = sys.argv[1:]
     i = 0
@@ -54,10 +55,15 @@ def parse_args() -> tuple[set[str], bool]:
         elif argv[i] == "--verbose":
             verbose = True
             i += 1
+        elif argv[i] == "--net" and i + 1 < len(argv):
+            net_mode = argv[i + 1].strip().lower()
+            if net_mode not in {"ru", "en"}:
+                raise ValueError(f"Unsupported --net value: {net_mode}. Use ru or en.")
+            i += 2
         else:
             i += 1
 
-    return requested_specs, verbose
+    return requested_specs, verbose, net_mode
 
 
 async def run_pagination_stub(spec_name: str, spec: dict) -> list[str]:
@@ -67,7 +73,7 @@ async def run_pagination_stub(spec_name: str, spec: dict) -> list[str]:
 
 
 async def async_main() -> int:
-    requested_specs, verbose = parse_args()
+    requested_specs, verbose, net_mode = parse_args()
     configure_logging(verbose=verbose)
 
     state = load_state()
@@ -75,9 +81,14 @@ async def async_main() -> int:
     failures: list[dict] = []
     site_failures: dict[str, list[str]] = defaultdict(list)
 
-    runlog.info("START discovery requested=%s", ",".join(sorted(requested_specs)) if requested_specs else "all")
+    runlog.info(
+        "START discovery requested=%s net=%s",
+        ",".join(sorted(requested_specs)) if requested_specs else "all",
+        net_mode,
+    )
     logger.info("Starting discovery pipeline")
     logger.info("Specs to run: %s", ", ".join(requested_specs) if requested_specs else "all")
+    logger.info("Network mode: %s", net_mode)
 
     total_specs = 0
     success_specs = 0
@@ -107,16 +118,17 @@ async def async_main() -> int:
             continue
 
         logger.info(
-            "[RUN] spec=%s type=%s url=%s",
+            "[RUN] spec=%s type=%s url=%s net=%s",
             spec_name,
             spec["type"],
             spec["start_url"],
+            net_mode,
         )
-        runlog.info("RUN   %s %s", spec["site"], spec_name)
+        runlog.info("RUN   %s %s net=%s", spec["site"], spec_name, net_mode)
 
         try:
             if spec["type"] == "browser":
-                links = await run_browser_spec(spec_name, spec)
+                links = await run_browser_spec(spec_name, spec, net_mode=net_mode)
             elif spec["type"] == "pagination":
                 links = await run_pagination_stub(spec_name, spec)
             else:
@@ -167,6 +179,7 @@ async def async_main() -> int:
                     "site": spec["site"],
                     "page_url": spec["start_url"],
                     "error": str(e),
+                    "net_mode": net_mode,
                 },
             )
 

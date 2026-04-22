@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def dataset_file(site: str, category: str) -> Path:
-    return DATASET_DIR / slugify(site) / slugify(category) / "products.jsonl"
+    return DATASET_DIR/ "links" / slugify(site) / slugify(category) / "products.jsonl"
 
 
 async def new_page(browser: Browser) -> tuple[BrowserContext, Page]:

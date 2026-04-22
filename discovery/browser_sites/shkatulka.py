@@ -125,7 +125,7 @@ async def run(browser: Browser, spec: dict) -> list[str]:
         last_product_count = 0
         round_index = 1
 
-        while stagnant_rounds < 8:
+        while stagnant_rounds < 5:
             links = await _get_page_links(page)
 
             fresh_links: list[str] = []
