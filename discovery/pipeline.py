@@ -51,12 +51,8 @@ def record_site_error(state, site_host: str) -> int:
 
 def should_skip_by_country(site_name: str, is_ru: bool) -> bool:
     is_vpn_site = site_name in VPN_SITES
-
     if is_ru:
-        # В RU запускаем только обычные сайты
         return is_vpn_site
-
-    # В non-RU запускаем только VPN-сайты
     return not is_vpn_site
 
 
@@ -81,7 +77,6 @@ def parse_args() -> tuple[set[str], bool]:
             i += 1
 
     expanded_specs = set(requested_specs)
-
     for group_name in requested_groups:
         group_specs = SPEC_GROUPS.get(group_name)
         if group_specs:
@@ -171,13 +166,7 @@ async def async_main() -> int:
             msg = f"blocked site={site_host} spec={spec_name}"
             logger.warning("[SKIP] %s", msg)
             runlog.info("SKIP  %s %s blocked", site_name, spec_name)
-            failures.append(
-                {
-                    "spec_name": spec_name,
-                    "site": site_name,
-                    "reason": "blocked",
-                }
-            )
+            failures.append({"spec_name": spec_name, "site": site_name, "reason": "blocked"})
             site_failures[site_name].append(spec_name)
             continue
 
@@ -188,12 +177,7 @@ async def async_main() -> int:
             spec["start_url"],
             country_code or "unknown",
         )
-        runlog.info(
-            "RUN   %s %s country=%s",
-            site_name,
-            spec_name,
-            country_code or "unknown",
-        )
+        runlog.info("RUN   %s %s country=%s", site_name, spec_name, country_code or "unknown")
 
         try:
             if spec["type"] == "browser":
@@ -228,13 +212,7 @@ async def async_main() -> int:
                 new_unique,
                 len(state.discovered_urls),
             )
-            runlog.info(
-                "OK    %s %s collected=%s new_unique=%s",
-                site_name,
-                spec_name,
-                len(links),
-                new_unique,
-            )
+            runlog.info("OK    %s %s collected=%s new_unique=%s", site_name, spec_name, len(links), new_unique)
             record_site_success(state, site_host)
 
         except Exception as e:
@@ -257,13 +235,7 @@ async def async_main() -> int:
             logger.exception("[FAIL] spec=%s", spec_name)
             runlog.info("FAIL  %s %s error=%s", site_name, spec_name, str(e))
 
-            failures.append(
-                {
-                    "spec_name": spec_name,
-                    "site": site_name,
-                    "reason": str(e),
-                }
-            )
+            failures.append({"spec_name": spec_name, "site": site_name, "reason": str(e)})
             site_failures[site_name].append(spec_name)
 
             if count >= SITE_ERROR_LIMIT:
@@ -283,12 +255,7 @@ async def async_main() -> int:
     if failures:
         logger.warning("Failed specs summary:")
         for item in failures:
-            logger.warning(
-                "  site=%s spec=%s reason=%s",
-                item["site"],
-                item["spec_name"],
-                item["reason"],
-            )
+            logger.warning("  site=%s spec=%s reason=%s", item["site"], item["spec_name"], item["reason"])
 
         runlog.info("SUMMARY failed_sites=%s", ",".join(sorted(site_failures.keys())))
         for site, specs in sorted(site_failures.items()):

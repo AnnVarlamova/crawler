@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from urllib.parse import quote_plus
 
 os.environ["NO_PROXY"] = "127.0.0.1,localhost,::1"
 os.environ["no_proxy"] = "127.0.0.1,localhost,::1"
@@ -31,7 +32,7 @@ VPN_SITES = {
     # "vikisews", если потом понадобится
 }
 
-ETSY_QUERIES = {
+ETSY_QUERY_MAP = {
     "etsy_vogue_dresses": "vogue sewing pattern dress",
     "etsy_vogue_tops": "vogue sewing pattern top",
     "etsy_vogue_blouses": "vogue sewing pattern blouse",
@@ -46,6 +47,21 @@ ETSY_QUERIES = {
     "etsy_vogue_women": "vogue sewing pattern womens",
     "etsy_vogue_men": "vogue sewing pattern mens",
 }
+
+
+
+
+
+def build_etsy_search_url(query: str, page: int = 1) -> str:
+    q = quote_plus(query)
+
+    # первая страница БЕЗ page
+    if page <= 1:
+        return f"https://www.etsy.com/search?q={q}"
+
+    # остальные — с pagination
+    return f"https://www.etsy.com/search?q={q}&page={page}&ref=pagination"
+
 
 SITE_SPECS: dict[str, dict] = {
     "simplicity_women": {
@@ -255,7 +271,6 @@ SITE_SPECS: dict[str, dict] = {
         "section_gender": "men",
     },
 
-    # --- NEW: MARFY ---
     "marfy_handmade_precut": {
         "type": "browser",
         "handler": "marfy",
@@ -266,119 +281,145 @@ SITE_SPECS: dict[str, dict] = {
         "page_to": 108,
     },
 
-    # --- NEW: ETSY ---
     "etsy_vogue_dresses": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+dress&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_dresses"], 1),
         "category": "vogue-dresses",
-        "query": ETSY_QUERIES["etsy_vogue_dresses"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_dresses"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_tops": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+top&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_tops"], 1),
         "category": "vogue-tops",
-        "query": ETSY_QUERIES["etsy_vogue_tops"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_tops"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_blouses": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+blouse&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_blouses"], 1),
         "category": "vogue-blouses",
-        "query": ETSY_QUERIES["etsy_vogue_blouses"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_blouses"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_shirts": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+shirt&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_shirts"], 1),
         "category": "vogue-shirts",
-        "query": ETSY_QUERIES["etsy_vogue_shirts"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_shirts"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_skirts": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+skirt&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_skirts"], 1),
         "category": "vogue-skirts",
-        "query": ETSY_QUERIES["etsy_vogue_skirts"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_skirts"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_pants": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+pants&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_pants"], 1),
         "category": "vogue-pants",
-        "query": ETSY_QUERIES["etsy_vogue_pants"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_pants"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_shorts": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+shorts&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_shorts"], 1),
         "category": "vogue-shorts",
-        "query": ETSY_QUERIES["etsy_vogue_shorts"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_shorts"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_jackets": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+jacket&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_jackets"], 1),
         "category": "vogue-jackets",
-        "query": ETSY_QUERIES["etsy_vogue_jackets"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_jackets"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_vests": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+vest&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_vests"], 1),
         "category": "vogue-vests",
-        "query": ETSY_QUERIES["etsy_vogue_vests"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_vests"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_jumpsuits": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+jumpsuit&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_jumpsuits"], 1),
         "category": "vogue-jumpsuits",
-        "query": ETSY_QUERIES["etsy_vogue_jumpsuits"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_jumpsuits"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_outerwear": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+coat&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_outerwear"], 1),
         "category": "vogue-outerwear",
-        "query": ETSY_QUERIES["etsy_vogue_outerwear"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_outerwear"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_women": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+womens&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_women"], 1),
         "category": "vogue-women",
-        "query": ETSY_QUERIES["etsy_vogue_women"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_women"],
+        "page_from": 1,
+        "page_to": 250,
     },
     "etsy_vogue_men": {
         "type": "browser",
         "handler": "etsy",
         "site": "etsy",
-        "start_url": "https://www.etsy.com/search?q=vogue+sewing+pattern+mens&ref=search_bar",
+        "start_url": build_etsy_search_url(ETSY_QUERY_MAP["etsy_vogue_men"], 1),
         "category": "vogue-men",
-        "query": ETSY_QUERIES["etsy_vogue_men"],
+        "query": ETSY_QUERY_MAP["etsy_vogue_men"],
+        "page_from": 1,
+        "page_to": 250,
     },
 
-    # --- NEW: BURDASTYLE ---
     "burdastyle_women_dresses": {
         "type": "browser",
         "handler": "burdastyle",
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/platya-dlya-zhenshhin/",
         "category": "platya-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_tops": {
         "type": "browser",
@@ -386,6 +427,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/topy-dlya-zhenshhin/",
         "category": "topy-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_bolero": {
         "type": "browser",
@@ -393,6 +436,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/bolero-dlya-zhenshhin/",
         "category": "bolero-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_shirts": {
         "type": "browser",
@@ -400,6 +445,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/rubashki-dlya-zhenshhin/",
         "category": "rubashki-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_sweaters": {
         "type": "browser",
@@ -407,6 +454,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/svitery-dlya-zhenshhin/",
         "category": "svitery-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_blazers": {
         "type": "browser",
@@ -414,6 +463,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/pidzhaki-dlya-zhenshhin/",
         "category": "pidzhaki-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_vests": {
         "type": "browser",
@@ -421,6 +472,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/zhilety-dlya-zhenshhin/",
         "category": "zhilety-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_skirts": {
         "type": "browser",
@@ -428,6 +481,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/yubki-dlya-zhenshhin/",
         "category": "yubki-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_pants": {
         "type": "browser",
@@ -435,6 +490,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/bryuki-dlya-zhenshhin/",
         "category": "bryuki-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_shorts": {
         "type": "browser",
@@ -442,6 +499,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/shorty-dlya-zhenshhin/",
         "category": "shorty-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_overalls": {
         "type": "browser",
@@ -449,6 +508,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/kombinezony-dlya-zhenshhin/",
         "category": "kombinezony-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_suits": {
         "type": "browser",
@@ -456,6 +517,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/komplekty-i-kostyumy-dlya-zhenshhin/",
         "category": "komplekty-i-kostyumy-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_outerwear": {
         "type": "browser",
@@ -463,6 +526,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/verkhnyaya-odezhda-dlya-zhenshhin/",
         "category": "verkhnyaya-odezhda-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_underwear": {
         "type": "browser",
@@ -470,6 +535,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/nizhnee-bele-dlya-zhenshhin/",
         "category": "nizhnee-bele-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_swimwear": {
         "type": "browser",
@@ -477,6 +544,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/kupalniki-dlya-zhenshhin/",
         "category": "kupalniki-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_women_homewear": {
         "type": "browser",
@@ -484,6 +553,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/odezhda-dlya-doma-dlya-zhenshhin/",
         "category": "odezhda-dlya-doma-dlya-zhenshhin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_shirts": {
         "type": "browser",
@@ -491,6 +562,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/rubashki-dlya-muzhchin/",
         "category": "rubashki-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_sweaters": {
         "type": "browser",
@@ -498,6 +571,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/svitery-dlya-muzhchin/",
         "category": "svitery-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_blazers": {
         "type": "browser",
@@ -505,6 +580,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/pidzhaki-dlya-muzhchin/",
         "category": "pidzhaki-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_vests": {
         "type": "browser",
@@ -512,6 +589,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/zhilety-dlya-muzhchin/",
         "category": "zhilety-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_pants": {
         "type": "browser",
@@ -519,6 +598,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/bryuki-dlya-muzhchin/",
         "category": "bryuki-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_shorts": {
         "type": "browser",
@@ -526,6 +607,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/shorty-dlya-muzhchin/",
         "category": "shorty-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_overalls": {
         "type": "browser",
@@ -533,6 +616,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/kombinezony-dlya-muzhchin/",
         "category": "kombinezony-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_suits": {
         "type": "browser",
@@ -540,6 +625,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/komplekty-i-kostyumy-dlya-muzhchin/",
         "category": "komplekty-i-kostyumy-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_outerwear": {
         "type": "browser",
@@ -547,6 +634,8 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/verkhnyaya-odezhda-dlya-muzhchin/",
         "category": "verkhnyaya-odezhda-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
     "burdastyle_men_underwear": {
         "type": "browser",
@@ -554,15 +643,19 @@ SITE_SPECS: dict[str, dict] = {
         "site": "burdastyle",
         "start_url": "https://burdastyle.ru/vikroyki/nizhnee-bele-dlya-muzhchin/",
         "category": "nizhnee-bele-dlya-muzhchin",
+        "page_from": 1,
+        "page_to": 999,
     },
 
-    # --- NEW: HELPERSEW ---
     "helpersew_women": {
         "type": "browser",
         "handler": "helpersew",
         "site": "helpersew",
         "start_url": "https://helpersew.com/catalog/zhenskie/",
         "category": "zhenskie",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
     },
     "helpersew_men": {
         "type": "browser",
@@ -570,28 +663,171 @@ SITE_SPECS: dict[str, dict] = {
         "site": "helpersew",
         "start_url": "https://helpersew.com/catalog/muzhskie/",
         "category": "muzhskie",
+        "page_from": 1,
+        "page_to": 1,
+        "needs_pagination": False,
     },
 
-    # --- NEW: GRASSER ---
-    "grasser_women": {
+    "grasser_women_outerwear": {
         "type": "browser",
         "handler": "grasser",
         "site": "grasser",
-        "start_url": "https://grasser.ru/vykrojki/vykrojki-dlya-zhenshchin/",
-        "category": "vykrojki-dlya-zhenshchin",
-        "page_param": "PAGEN_3",
+        "start_url": "https://grasser.ru/vykrojki/vykrojki-verkhney-odezhdy/",
+        "category": "vykrojki-verkhney-odezhdy",
         "page_from": 1,
-        "page_to": 32,
+        "page_to": 999,
+        "needs_pagination": True,
     },
-    "grasser_men": {
+    "grasser_women_jackets_vests": {
         "type": "browser",
         "handler": "grasser",
         "site": "grasser",
-        "start_url": "https://grasser.ru/vykrojki/muzhskie-vykrojki/",
-        "category": "muzhskie-vykrojki",
-        "page_param": "PAGEN_3",
+        "start_url": "https://grasser.ru/vykrojki/zhakety-i-zhilety/",
+        "category": "zhakety-i-zhilety",
         "page_from": 1,
-        "page_to": 3,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+    "grasser_women_blouses_shirts": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/bluzki-i-rubashki/",
+        "category": "bluzki-i-rubashki",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+    "grasser_women_dresses": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/platya-i-sarafany/",
+        "category": "platya-i-sarafany",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+    "grasser_women_sweatshirts": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/svitshoty/",
+        "category": "svitshoty",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+    "grasser_women_tshirts_bodys_tops": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/vykrojki-futbolok-bodi-topov/",
+        "category": "vykrojki-futbolok-bodi-topov",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+    "grasser_women_pants_shorts_overalls": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/bryuki-shorty-kombinezony/",
+        "category": "bryuki-shorty-kombinezony",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+    "grasser_women_skirts": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/yubki/",
+        "category": "yubki",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+    "grasser_women_underwear_swimwear": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/nizhnee-bele-i-kupalniki/",
+        "category": "nizhnee-bele-i-kupalniki",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+    "grasser_women_swimwear": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/vykroyki-kupalnikov/",
+        "category": "vykroyki-kupalnikov",
+        "page_from": 1,
+        "page_to": 999,
+        "needs_pagination": True,
+    },
+
+    "grasser_men_outerwear": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/verkhnyaya-odezhda/",
+        "category": "verkhnyaya-odezhda",
+        "page_from": 1,
+        "page_to": 1,
+        "needs_pagination": False,
+    },
+    "grasser_men_jackets_vests": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/pidzhaki-i-zhilety/",
+        "category": "pidzhaki-i-zhilety",
+        "page_from": 1,
+        "page_to": 1,
+        "needs_pagination": False,
+    },
+    "grasser_men_shirts": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/muzhskie-rubashki/",
+        "category": "muzhskie-rubashki",
+        "page_from": 1,
+        "page_to": 1,
+        "needs_pagination": False,
+    },
+    "grasser_men_sweatshirts_hoodies": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/svitshoty-khudi-tolstovki-svitery/",
+        "category": "svitshoty-khudi-tolstovki-svitery",
+        "page_from": 1,
+        "page_to": 1,
+        "needs_pagination": False,
+    },
+    "grasser_men_pants_shorts": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/bryuki-shorty/",
+        "category": "bryuki-shorty",
+        "page_from": 1,
+        "page_to": 1,
+        "needs_pagination": False,
+    },
+    "grasser_men_homewear": {
+        "type": "browser",
+        "handler": "grasser",
+        "site": "grasser",
+        "start_url": "https://grasser.ru/vykrojki/domashnyaya-odezhda-i-aksessuary/",
+        "category": "domashnyaya-odezhda-i-aksessuary",
+        "page_from": 1,
+        "page_to": 1,
+        "needs_pagination": False,
     },
 }
 
@@ -599,7 +835,6 @@ SPEC_GROUPS: dict[str, set[str]] = {
     "current_all": {
         "simplicity_women",
         "simplicity_men",
-
         "vikisews_dresses",
         "vikisews_tops",
         "vikisews_pants",
@@ -610,7 +845,6 @@ SPEC_GROUPS: dict[str, set[str]] = {
         "vikisews_outerwear",
         "vikisews_homewear",
         "vikisews_men",
-
         "shkatulka_dresses",
         "shkatulka_tops",
         "shkatulka_pants",
@@ -627,10 +861,8 @@ SPEC_GROUPS: dict[str, set[str]] = {
         "shkatulka_men_outerwear",
         "shkatulka_men_jackets",
     },
-
     "vpn_new": {
         "marfy_handmade_precut",
-
         "etsy_vogue_dresses",
         "etsy_vogue_tops",
         "etsy_vogue_blouses",
@@ -645,190 +877,28 @@ SPEC_GROUPS: dict[str, set[str]] = {
         "etsy_vogue_women",
         "etsy_vogue_men",
     },
-
     "novpn_new": {
-        "burdastyle_women_dresses",
-        "burdastyle_women_tops",
-        "burdastyle_women_bolero",
-        "burdastyle_women_shirts",
-        "burdastyle_women_sweaters",
-        "burdastyle_women_blazers",
-        "burdastyle_women_vests",
-        "burdastyle_women_skirts",
-        "burdastyle_women_pants",
-        "burdastyle_women_shorts",
-        "burdastyle_women_overalls",
-        "burdastyle_women_suits",
-        "burdastyle_women_outerwear",
-        "burdastyle_women_underwear",
-        "burdastyle_women_swimwear",
-        "burdastyle_women_homewear",
-
-        "burdastyle_men_shirts",
-        "burdastyle_men_sweaters",
-        "burdastyle_men_blazers",
-        "burdastyle_men_vests",
-        "burdastyle_men_pants",
-        "burdastyle_men_shorts",
-        "burdastyle_men_overalls",
-        "burdastyle_men_suits",
-        "burdastyle_men_outerwear",
-        "burdastyle_men_underwear",
-
-        "helpersew_women",
-        "helpersew_men",
-
-        "grasser_women",
-        "grasser_men",
+        key for key, spec in SITE_SPECS.items()
+        if spec["site"] in {"burdastyle", "helpersew", "grasser"}
     },
-
-    "etsy_all": {
-        "etsy_vogue_dresses",
-        "etsy_vogue_tops",
-        "etsy_vogue_blouses",
-        "etsy_vogue_shirts",
-        "etsy_vogue_skirts",
-        "etsy_vogue_pants",
-        "etsy_vogue_shorts",
-        "etsy_vogue_jackets",
-        "etsy_vogue_vests",
-        "etsy_vogue_jumpsuits",
-        "etsy_vogue_outerwear",
-        "etsy_vogue_women",
-        "etsy_vogue_men",
+    "burda_all": {
+        key for key, spec in SITE_SPECS.items()
+        if spec["site"] == "burdastyle"
     },
-
-    "burdastyle_women_all": {
-        "burdastyle_women_dresses",
-        "burdastyle_women_tops",
-        "burdastyle_women_bolero",
-        "burdastyle_women_shirts",
-        "burdastyle_women_sweaters",
-        "burdastyle_women_blazers",
-        "burdastyle_women_vests",
-        "burdastyle_women_skirts",
-        "burdastyle_women_pants",
-        "burdastyle_women_shorts",
-        "burdastyle_women_overalls",
-        "burdastyle_women_suits",
-        "burdastyle_women_outerwear",
-        "burdastyle_women_underwear",
-        "burdastyle_women_swimwear",
-        "burdastyle_women_homewear",
-    },
-
-    "burdastyle_men_all": {
-        "burdastyle_men_shirts",
-        "burdastyle_men_sweaters",
-        "burdastyle_men_blazers",
-        "burdastyle_men_vests",
-        "burdastyle_men_pants",
-        "burdastyle_men_shorts",
-        "burdastyle_men_overalls",
-        "burdastyle_men_suits",
-        "burdastyle_men_outerwear",
-        "burdastyle_men_underwear",
-    },
-
     "helpersew_all": {
-        "helpersew_women",
-        "helpersew_men",
+        key for key, spec in SITE_SPECS.items()
+        if spec["site"] == "helpersew"
     },
-
     "grasser_all": {
-        "grasser_women",
-        "grasser_men",
+        key for key, spec in SITE_SPECS.items()
+        if spec["site"] == "grasser"
     },
-
-    "marfy_all": {
-        "marfy_handmade_precut",
+    "etsy_all": {
+        key for key, spec in SITE_SPECS.items()
+        if spec["site"] == "etsy"
     },
-
-    "simplicity_all": {
-        "simplicity_women",
-        "simplicity_men",
-    },
-
-    "vikisews_all": {
-        "vikisews_dresses",
-        "vikisews_tops",
-        "vikisews_pants",
-        "vikisews_shirts",
-        "vikisews_skirts",
-        "vikisews_jackets",
-        "vikisews_overalls",
-        "vikisews_outerwear",
-        "vikisews_homewear",
-        "vikisews_men",
-    },
-
-    "shkatulka_all": {
-        "shkatulka_dresses",
-        "shkatulka_tops",
-        "shkatulka_pants",
-        "shkatulka_skirts",
-        "shkatulka_hoodies",
-        "shkatulka_outerwear",
-        "shkatulka_jackets",
-        "shkatulka_overalls",
-        "shkatulka_homewear_women",
-        "shkatulka_homewear_men",
-        "shkatulka_men_shirts",
-        "shkatulka_men_hoodies",
-        "shkatulka_men_pants",
-        "shkatulka_men_outerwear",
-        "shkatulka_men_jackets",
-    },
-
     "all_new": {
-        "marfy_handmade_precut",
-
-        "etsy_vogue_dresses",
-        "etsy_vogue_tops",
-        "etsy_vogue_blouses",
-        "etsy_vogue_shirts",
-        "etsy_vogue_skirts",
-        "etsy_vogue_pants",
-        "etsy_vogue_shorts",
-        "etsy_vogue_jackets",
-        "etsy_vogue_vests",
-        "etsy_vogue_jumpsuits",
-        "etsy_vogue_outerwear",
-        "etsy_vogue_women",
-        "etsy_vogue_men",
-
-        "burdastyle_women_dresses",
-        "burdastyle_women_tops",
-        "burdastyle_women_bolero",
-        "burdastyle_women_shirts",
-        "burdastyle_women_sweaters",
-        "burdastyle_women_blazers",
-        "burdastyle_women_vests",
-        "burdastyle_women_skirts",
-        "burdastyle_women_pants",
-        "burdastyle_women_shorts",
-        "burdastyle_women_overalls",
-        "burdastyle_women_suits",
-        "burdastyle_women_outerwear",
-        "burdastyle_women_underwear",
-        "burdastyle_women_swimwear",
-        "burdastyle_women_homewear",
-
-        "burdastyle_men_shirts",
-        "burdastyle_men_sweaters",
-        "burdastyle_men_blazers",
-        "burdastyle_men_vests",
-        "burdastyle_men_pants",
-        "burdastyle_men_shorts",
-        "burdastyle_men_overalls",
-        "burdastyle_men_suits",
-        "burdastyle_men_outerwear",
-        "burdastyle_men_underwear",
-
-        "helpersew_women",
-        "helpersew_men",
-
-        "grasser_women",
-        "grasser_men",
+        key for key, spec in SITE_SPECS.items()
+        if spec["site"] in {"marfy", "etsy", "burdastyle", "helpersew", "grasser"}
     },
 }
