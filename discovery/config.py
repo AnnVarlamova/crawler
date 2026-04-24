@@ -672,7 +672,7 @@ SITE_SPECS: dict[str, dict] = {
         "type": "browser",
         "handler": "grasser",
         "site": "grasser",
-        "start_url": "https://grasser.ru/vykrojki/vykrojki-verkhney-odezhdy/",
+        "start_url": "https://grasser.ru/vykrojki/vykroyki-verkhney-odezhdy/",
         "category": "vykrojki-verkhney-odezhdy",
         "page_from": 1,
         "page_to": 999,
