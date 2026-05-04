@@ -32,7 +32,12 @@ class CollectedProduct:
     similar_patterns: list[str] = field(default_factory=list)
     description: str | None = None
 
+    collection: str | None = None
+    season: str | None = None
+    style: str | None = None
+
     images: list[CollectedImage] = field(default_factory=list)
+    review_images: list[CollectedImage] = field(default_factory=list)
 
     raw_sections: dict[str, str] = field(default_factory=dict)
     raw: dict[str, Any] = field(default_factory=dict)
