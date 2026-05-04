@@ -23,6 +23,8 @@ from collecting.io import (
 )
 from collecting.logging_utils import setup_logging
 from collecting.models import LinkRecord
+from collecting.config import DEBUG_DIR
+from collecting.io import product_id_from_url
 
 logger = setup_logging()
 
@@ -115,6 +117,14 @@ async def process_one(record: LinkRecord, browser) -> None:
         except Exception as e:
             last_error = e
             last_traceback = traceback.format_exc()
+            if page is not None:
+                try:
+                    DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+                    debug_path = DEBUG_DIR / f"{record.site}_{product_id_from_url(record.url)}_attempt_{attempt + 1}.html"
+                    debug_path.write_text(await page.content(), encoding="utf-8")
+                    logger.error("Saved debug html: %s", debug_path)
+                except Exception:
+                    logger.exception("Failed to save debug html for url=%s", record.url)
 
             logger.exception(
                 "Collect failed attempt=%s/%s site=%s category=%s url=%s",

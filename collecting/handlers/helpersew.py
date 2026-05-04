@@ -18,7 +18,17 @@ class HelpersewCollectingHandler(CollectingHandler):
     async def collect(self, page: Page, record: LinkRecord) -> CollectedProduct:
         logger.debug("Collect Helpersew product: %s", record.url)
 
-        await page.wait_for_selector("h1, .cat-detail-title", timeout=15000)
+        await page.wait_for_load_state("domcontentloaded")
+        await page.wait_for_timeout(1500)
+
+        current_url = page.url
+        body_text = await self._safe_body_text(page)
+
+        if self._looks_like_not_product_page(current_url, body_text):
+            raise RuntimeError(
+                f"Helpersew page does not look like product page: "
+                f"current_url={current_url!r}, title={await page.title()!r}"
+            )
 
         title = await self._title(page)
         difficulty_text = await self._difficulty_text(page)
@@ -59,6 +69,37 @@ class HelpersewCollectingHandler(CollectingHandler):
                 "difficulty_text": difficulty_text,
             },
         )
+
+    async def _safe_body_text(self, page: Page) -> str:
+        try:
+            return self._clean_text(await page.locator("body").inner_text(timeout=5000))
+        except Exception:
+            return ""
+
+    def _looks_like_not_product_page(self, current_url: str, body_text: str) -> bool:
+        lower_url = current_url.lower()
+        lower_text = body_text.lower()
+
+        bad_url_parts = [
+            "/404",
+            "not-found",
+        ]
+
+        if any(part in lower_url for part in bad_url_parts):
+            return True
+
+        bad_text_parts = [
+            "страница не найдена",
+            "товар не найден",
+            "ничего не найдено",
+            "access denied",
+            "доступ запрещен",
+        ]
+
+        if any(part in lower_text for part in bad_text_parts):
+            return True
+
+        return False
 
     async def _title(self, page: Page) -> str | None:
         selectors = [
