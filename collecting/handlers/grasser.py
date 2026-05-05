@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from urllib.parse import urljoin
 
 from playwright.async_api import Page
@@ -25,27 +24,24 @@ class GrasserCollectingHandler(CollectingHandler):
             title = await self._text_or_none(page, "h1")
 
         subtitle = await self._text_or_none(page, ".product__info-subtitle")
-        difficulty = await self._difficulty(page)
+        description = subtitle
 
-        description = await self._description(page)
         images = await self._product_images(page, record.url)
-
-
         tags = await self._tags(page)
 
         logger.debug(
-            "Parsed Grasser product title=%r difficulty=%r images=%s review_images=%s url=%s",
+            "Parsed Grasser product title=%r images=%s subtitle=%r url=%s",
             title,
-            difficulty,
             len(images),
+            subtitle,
             record.url,
         )
 
-        raw_sections = {}
+        raw_sections: dict[str, str] = {}
+
         if subtitle:
             raw_sections["Краткое описание"] = subtitle
-        if description:
-            raw_sections["Описание"] = description
+            raw_sections["Описание"] = subtitle
 
         return CollectedProduct(
             url=record.url,
@@ -53,10 +49,14 @@ class GrasserCollectingHandler(CollectingHandler):
             category=record.category,
             source_page=record.source_page,
             title=title,
-            difficulty=difficulty,
+            difficulty=None,
             similar_patterns=[],
             description=description,
+            collection=None,
+            season=None,
+            style=None,
             images=images,
+            review_images=[],
             raw_sections=raw_sections,
             raw={
                 "html_title": await page.title(),
@@ -71,9 +71,12 @@ class GrasserCollectingHandler(CollectingHandler):
         if await loc.count() == 0:
             return None
 
-        text = await loc.first.inner_text()
-        text = self._clean_text(text)
+        try:
+            text = await loc.first.text_content(timeout=5000)
+        except Exception:
+            return None
 
+        text = self._clean_text(text)
         return text or None
 
     async def _tags(self, page: Page) -> list[str]:
@@ -83,103 +86,59 @@ class GrasserCollectingHandler(CollectingHandler):
         count = await loc.count()
 
         for i in range(count):
-            text = self._clean_text(await loc.nth(i).inner_text())
+            try:
+                text = await loc.nth(i).text_content(timeout=5000)
+            except Exception:
+                continue
+
+            text = self._clean_text(text)
             if text:
                 result.append(text)
 
         return list(dict.fromkeys(result))
 
-    async def _difficulty(self, page: Page) -> int | None:
-        """
-        На Grasser сложность лежит в тегах:
-
-        <div class="tags">
-          <div class="tag">Сложность: 3 из 5</div>
-          ...
-        </div>
-        """
-        tags = await self._tags(page)
-
-        for tag in tags:
-            match = re.search(r"сложность\s*:\s*(\d+)\s*из\s*(\d+)", tag, flags=re.IGNORECASE)
-            if match:
-                return int(match.group(1))
-
-        text = self._clean_text(await page.locator("body").inner_text())
-        match = re.search(r"сложность\s*:\s*(\d+)\s*из\s*(\d+)", text, flags=re.IGNORECASE)
-
-        if match:
-            return int(match.group(1))
-
-        return None
-
-    async def _description(self, page: Page) -> str | None:
-        """
-        Основное описание находится во вкладке:
-
-        .tabs__content-block[data-content="description"]
-        внутри:
-          .product__description
-          .product__collapsing
-          .collapse-block
-          .collapse-text
-
-        Берём текст только из активной/описательной вкладки, чтобы не прихватить отзывы и вопросы.
-        """
-        selectors = [
-            '.tabs__content-block[data-content="description"] .product__description',
-            '.tabs__content-block[data-content="description"] .product__collapsing',
-            '.tabs__content-block[data-content="description"]',
-            ".product__description",
-            ".product__collapsing",
-        ]
-
-        candidates: list[str] = []
-
-        for selector in selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
-
-            for i in range(min(count, 3)):
-                text = self._clean_text(await loc.nth(i).inner_text())
-
-                if self._looks_like_description(text):
-                    candidates.append(text)
-
-            if candidates:
-                break
-
-        if not candidates:
-            return None
-
-        return self._deduplicate_description(candidates[0])
-
     async def _product_images(self, page: Page, page_url: str) -> list[CollectedImage]:
         """
-        На Grasser в большой галерее есть ссылки:
+        Берём только большие фотографии Grasser.
 
-        <a data-fancybox="gallery" href="/upload/iblock/...jpg">
-          ...
-        </a>
+        Основной источник:
+          .product__slider-big a[data-fancybox="gallery"][href]
 
-        Лучше брать href, потому что там обычно оригинальная картинка.
-        Потом fallback — img[src] в большой и мини-галерее.
+        Не берём:
+          .product__slider-mini img[src]
+
+        Потому что вертикальная галерея даёт маленькие превью.
         """
         result: list[CollectedImage] = []
         seen: set[str] = set()
 
+        gallery_root = page.locator(".product__left-gallery")
+        if await gallery_root.count() == 0:
+            gallery_root = page.locator(".product__left")
+
+        if await gallery_root.count() == 0:
+            gallery_root = page.locator(".product")
+
+        if await gallery_root.count() == 0:
+            logger.warning("Grasser gallery root not found url=%s", page_url)
+            return result
+
+        root = gallery_root.first
+
+        # 1. Лучший вариант — большие картинки из href.
         link_selectors = [
             '.product__slider-big a[data-fancybox="gallery"][href]',
             ".product__slider-big a[href]",
-            ".product__left-gallery a[href]",
         ]
 
         for selector in link_selectors:
-            loc = page.locator(selector)
+            loc = root.locator(selector)
             count = await loc.count()
 
             for i in range(count):
-                href = await loc.nth(i).get_attribute("href")
+                link = loc.nth(i)
+
+                href = await link.get_attribute("href")
                 if not href:
                     continue
 
@@ -197,55 +156,82 @@ class GrasserCollectingHandler(CollectingHandler):
                     CollectedImage(
                         url=url,
                         alt=None,
-                        source=selector,
+                        source=f".product__left-gallery {selector}",
                     )
                 )
 
             if result:
                 break
 
-        img_selectors = [
-            ".product__slider-big img[src]",
-            ".product__slider-mini img[src]",
-            ".product__left-gallery img[src]",
-        ]
+        # 2. Fallback: если href не нашли, берём src больших img, но не мини-слайдер.
+        if not result:
+            img_selectors = [
+                ".product__slider-big img[src]",
+                ".product__slider-big img[data-src]",
+                ".product__slider-big img[data-lazy]",
+            ]
 
-        for selector in img_selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
+            for selector in img_selectors:
+                loc = root.locator(selector)
+                count = await loc.count()
 
-            for i in range(count):
-                img = loc.nth(i)
+                for i in range(count):
+                    img = loc.nth(i)
 
-                src = await img.get_attribute("src")
-                alt = await img.get_attribute("alt")
+                    src = await self._best_image_attr(img)
+                    if not src:
+                        continue
 
-                if not src:
-                    src = await img.get_attribute("data-src")
+                    alt = await img.get_attribute("alt")
+                    url = urljoin(page_url, src.strip())
 
-                if not src:
-                    continue
+                    if not self._looks_like_real_image(url):
+                        continue
 
-                url = urljoin(page_url, src.strip())
+                    if url in seen:
+                        continue
 
-                if not self._looks_like_real_image(url):
-                    continue
+                    seen.add(url)
 
-                if url in seen:
-                    continue
-
-                seen.add(url)
-
-                result.append(
-                    CollectedImage(
-                        url=url,
-                        alt=self._clean_text(alt) if alt else None,
-                        source=selector,
+                    result.append(
+                        CollectedImage(
+                            url=url,
+                            alt=self._clean_text(alt) if alt else None,
+                            source=f".product__left-gallery {selector}",
+                        )
                     )
-                )
 
         return result
 
+    async def _best_image_attr(self, img) -> str | None:
+        attrs = [
+            "data-src",
+            "data-lazy",
+            "data-original",
+            "data-img",
+            "src",
+        ]
+
+        for attr in attrs:
+            value = await img.get_attribute(attr)
+            if value:
+                return value
+
+        srcset = await img.get_attribute("srcset")
+        if srcset:
+            return self._best_from_srcset(srcset)
+
+        return None
+
+    def _best_from_srcset(self, srcset: str | None) -> str | None:
+        if not srcset:
+            return None
+
+        parts = [part.strip() for part in srcset.split(",") if part.strip()]
+        if not parts:
+            return None
+
+        return parts[-1].split()[0]
 
     def _looks_like_real_image(self, url: str) -> bool:
         lower = url.lower()
@@ -264,54 +250,18 @@ class GrasserCollectingHandler(CollectingHandler):
             "social",
             "loader",
             "preloader",
+            "play",
+            "video",
         ]
 
         return not any(part in lower for part in bad_parts)
-
-    def _looks_like_description(self, text: str) -> bool:
-        if not text:
-            return False
-
-        lower = text.lower()
-
-        bad_parts = [
-            "отзывы",
-            "вопросы",
-            "чтобы оставить свой отзыв",
-            "необходимо войти",
-        ]
-
-        if any(part in lower for part in bad_parts):
-            return False
-
-        return len(text) > 80
-
-    def _deduplicate_description(self, text: str) -> str:
-        """
-        Иногда inner_text() может собрать одинаковые куски из раскрытых collapse-блоков.
-        Убираем точные дубли строк.
-        """
-        lines = [line.strip() for line in text.splitlines()]
-        lines = [line for line in lines if line]
-
-        result: list[str] = []
-        seen: set[str] = set()
-
-        for line in lines:
-            key = line.lower()
-            if key in seen:
-                continue
-
-            seen.add(key)
-            result.append(line)
-
-        return "\n".join(result).strip()
 
     def _clean_text(self, value: str | None) -> str:
         if not value:
             return ""
 
         value = value.replace("\xa0", " ")
+        value = value.replace("&nbsp;", " ")
 
         lines = [line.strip() for line in value.splitlines()]
         lines = [line for line in lines if line]
