@@ -20,16 +20,14 @@ class BurdaStyleCollectingHandler(CollectingHandler):
         await page.wait_for_selector("h1.pattern-stats__title", timeout=15000)
 
         title = await self._text_or_none(page, "h1.pattern-stats__title")
-        difficulty = await self._difficulty(page)
         similar_patterns = await self._similar_patterns(page)
         raw_sections = await self._tech_details(page)
         description = raw_sections.get("Описание")
         images = await self._images(page, record.url)
 
         logger.debug(
-            "Parsed BurdaStyle product title=%r difficulty=%r tags=%s images=%s url=%s",
+            "Parsed BurdaStyle product title=%r tags=%s images=%s url=%s",
             title,
-            difficulty,
             len(similar_patterns),
             len(images),
             record.url,
@@ -41,13 +39,15 @@ class BurdaStyleCollectingHandler(CollectingHandler):
             category=record.category,
             source_page=record.source_page,
             title=title,
-            difficulty=difficulty,
+            difficulty=None,
             similar_patterns=similar_patterns,
             description=description,
             images=images,
+            review_images=[],
             raw_sections=raw_sections,
             raw={
                 "html_title": await page.title(),
+                "tags": similar_patterns,
             },
         )
 
@@ -57,44 +57,16 @@ class BurdaStyleCollectingHandler(CollectingHandler):
         if await loc.count() == 0:
             return None
 
-        text = await loc.first.inner_text()
+        text = await loc.first.text_content(timeout=5000)
         text = self._clean_text(text)
 
         return text or None
 
-    async def _difficulty(self, page: Page) -> int | None:
-        """
-        На Burda сложность выглядит примерно так:
-
-        <div class="difficulty-rating ...">
-          <ul class="clearfix">
-            <li class="icon-difficulty active">1</li>
-            <li class="icon-difficulty">2</li>
-            ...
-          </ul>
-        </div>
-
-        Берём количество active.
-        """
-        active = page.locator(".pattern-info__difficulty li.icon-difficulty.active")
-        count = await active.count()
-
-        if count > 0:
-            return count
-
-        fallback_active = page.locator(".difficulty-rating li.icon-difficulty.active")
-        fallback_count = await fallback_active.count()
-
-        if fallback_count > 0:
-            return fallback_count
-
-        return None
-
     async def _similar_patterns(self, page: Page) -> list[str]:
         selectors = [
             ".pattern-info__bottom .tag-list .swiper-slide",
-            ".tag-list .swiper-slide",
             ".pattern-info__bottom .tag-list a",
+            ".tag-list .swiper-slide",
             ".tag-list a",
         ]
 
@@ -105,7 +77,7 @@ class BurdaStyleCollectingHandler(CollectingHandler):
             count = await loc.count()
 
             for i in range(count):
-                text = await loc.nth(i).inner_text()
+                text = await loc.nth(i).text_content(timeout=5000)
                 text = self._clean_text(text)
 
                 if text:
@@ -143,8 +115,8 @@ class BurdaStyleCollectingHandler(CollectingHandler):
             if await title_loc.count() == 0 or await desc_loc.count() == 0:
                 continue
 
-            title = self._clean_text(await title_loc.first.inner_text())
-            desc = self._clean_text(await desc_loc.first.inner_text())
+            title = self._clean_text(await title_loc.first.text_content(timeout=5000))
+            desc = self._clean_text(await desc_loc.first.text_content(timeout=5000))
 
             if title and desc:
                 result[title] = desc
@@ -153,55 +125,82 @@ class BurdaStyleCollectingHandler(CollectingHandler):
 
     async def _images(self, page: Page, page_url: str) -> list[CollectedImage]:
         """
-        На Burda картинки лежат внутри галереи:
+        Берём только большие изображения из основной галереи Burda.
 
-        .pattern-gallery__images img[src]
-        .pattern-gallery__thumbs img[src]
-        .pattern-gallery img[src]
+        Не берём:
+          .pattern-gallery__thumbs img[src]
 
-        Не берём все img со страницы, иначе попадут баннеры, логотипы и промо.
+        Потому что вертикальные thumbnails дублируют большие картинки.
         """
-        selectors = [
-            ".pattern-gallery__images img[src]",
-            ".pattern-gallery__thumbs img[src]",
-            ".pattern-gallery img[src]",
-        ]
-
         result: list[CollectedImage] = []
         seen: set[str] = set()
 
+        gallery_root = page.locator(".pattern-gallery__images")
+
+        if await gallery_root.count() == 0:
+            gallery_root = page.locator(".pattern-gallery")
+
+        if await gallery_root.count() == 0:
+            logger.warning("BurdaStyle gallery root not found url=%s", page_url)
+            return result
+
+        root = gallery_root.first
+
+        selectors = [
+            "img[src]",
+            "img[data-src]",
+            "source[srcset]",
+        ]
+
         for selector in selectors:
-            loc = page.locator(selector)
+            loc = root.locator(selector)
             count = await loc.count()
 
             for i in range(count):
-                img = loc.nth(i)
+                el = loc.nth(i)
 
-                src = await img.get_attribute("src")
-                alt = await img.get_attribute("alt")
+                src = await el.get_attribute("src")
+                if not src:
+                    src = await el.get_attribute("data-src")
+
+                if not src:
+                    srcset = await el.get_attribute("srcset")
+                    src = self._best_from_srcset(srcset)
+
+                alt = await el.get_attribute("alt")
 
                 if not src:
                     continue
 
-                src = urljoin(page_url, src.strip())
+                url = urljoin(page_url, src.strip())
 
-                if not self._looks_like_real_image(src):
+                if not self._looks_like_real_image(url):
                     continue
 
-                if src in seen:
+                if url in seen:
                     continue
 
-                seen.add(src)
+                seen.add(url)
 
                 result.append(
                     CollectedImage(
-                        url=src,
+                        url=url,
                         alt=self._clean_text(alt) if alt else None,
-                        source=selector,
+                        source=f".pattern-gallery__images {selector}",
                     )
                 )
 
         return result
+
+    def _best_from_srcset(self, srcset: str | None) -> str | None:
+        if not srcset:
+            return None
+
+        parts = [part.strip() for part in srcset.split(",") if part.strip()]
+        if not parts:
+            return None
+
+        return parts[-1].split()[0]
 
     def _looks_like_real_image(self, url: str) -> bool:
         lower = url.lower()
@@ -226,6 +225,9 @@ class BurdaStyleCollectingHandler(CollectingHandler):
     def _clean_text(self, value: str | None) -> str:
         if not value:
             return ""
+
+        value = value.replace("\xa0", " ")
+        value = value.replace("&nbsp;", " ")
 
         lines = [line.strip() for line in value.splitlines()]
         lines = [line for line in lines if line]
