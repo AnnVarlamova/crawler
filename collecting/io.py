@@ -66,7 +66,6 @@ def load_link_records(links_dir: Path, site: str | None = None) -> list[LinkReco
                     url=url,
                     site=row_site,
                     category=category,
-                    source_page=row.get("source_page"),
                 )
             )
 

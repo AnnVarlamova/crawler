@@ -62,24 +62,13 @@ class MarfyCollectingHandler(CollectingHandler):
             url=record.url,
             site=record.site,
             category=record.category,
-            source_page=record.source_page,
             title=title,
-            difficulty=None,
             similar_patterns=[],
             description=description,
             collection=collection,
             season=season,
             style=style,
             images=images,
-            review_images=[],
-            raw_sections=raw_sections,
-            raw={
-                "html_title": await page.title(),
-                "details": details,
-                "reference": self._first_value(details, ["Reference", "Riferimento"]),
-                "typology": self._first_value(details, ["Typology", "Tipologia"]),
-                "size": self._first_value(details, ["Size", "Taglia"]),
-            },
         )
 
     async def _title(self, page: Page) -> str | None:
@@ -438,7 +427,6 @@ class MarfyCollectingHandler(CollectingHandler):
                 result.append(
                     CollectedImage(
                         url=url,
-                        alt=self._clean_text(alt) if alt else None,
                         source=f"#product-images-large {selector}",
                     )
                 )
@@ -485,7 +473,6 @@ class MarfyCollectingHandler(CollectingHandler):
                     result.append(
                         CollectedImage(
                             url=url,
-                            alt=self._clean_text(alt) if alt else None,
                             source=f"#product-images-large {selector}",
                         )
                     )

@@ -49,20 +49,13 @@ class HelpersewCollectingHandler(CollectingHandler):
             url=record.url,
             site=record.site,
             category=record.category,
-            source_page=record.source_page,
             title=title,
-            difficulty=None,
             similar_patterns=[],
             description=description,
             collection=None,
             season=None,
             style=None,
             images=images,
-            review_images=[],
-            raw_sections=raw_sections,
-            raw={
-                "html_title": await page.title(),
-            },
         )
 
     async def _safe_body_text(self, page: Page) -> str:
@@ -224,7 +217,6 @@ class HelpersewCollectingHandler(CollectingHandler):
             result.append(
                 CollectedImage(
                     url=best,
-                    alt=self._clean_text(alt) if alt else None,
                     source=f".cat-detail__pics picture.cat-detail__pic[counter={counter}]",
                 )
             )
@@ -353,32 +345,6 @@ class HelpersewCollectingHandler(CollectingHandler):
 
         return text or None
 
-    def _looks_like_product_image(self, url: str) -> bool:
-        lower = url.lower()
-
-        if not any(ext in lower for ext in [".jpg", ".jpeg", ".png"]):
-            return False
-
-        # Специально не разрешаем webp, потому что они у тебя сейчас лишние.
-        if ".webp" in lower:
-            return False
-
-        bad_parts = [
-            "logo",
-            "sprite",
-            "icon",
-            "placeholder",
-            "avatar",
-            "banner",
-            "payment",
-            "social",
-            "loader",
-            "preloader",
-            "star",
-            "rating",
-        ]
-
-        return not any(part in lower for part in bad_parts)
 
     def _looks_like_description(self, text: str) -> bool:
         if not text:

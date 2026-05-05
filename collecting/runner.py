@@ -17,7 +17,6 @@ from collecting.io import (
     append_jsonl,
     get_product_dir,
     load_link_records,
-    product_id_from_url,
     read_jsonl,
     save_product,
 )
@@ -145,7 +144,6 @@ async def process_one(record: LinkRecord, browser) -> None:
             "url": record.url,
             "site": record.site,
             "category": record.category,
-            "source_page": record.source_page,
             "error": repr(last_error),
             "traceback": last_traceback,
         },

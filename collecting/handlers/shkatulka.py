@@ -40,20 +40,13 @@ class ShkatulkaCollectingHandler(CollectingHandler):
             url=record.url,
             site=record.site,
             category=record.category,
-            source_page=record.source_page,
             title=title,
-            difficulty=None,
             similar_patterns=[],
             description=description,
             collection=None,
             season=None,
             style=None,
             images=images,
-            review_images=[],
-            raw_sections=raw_sections,
-            raw={
-                "html_title": await page.title(),
-            },
         )
 
     async def _title(self, page: Page) -> str | None:
@@ -199,7 +192,6 @@ class ShkatulkaCollectingHandler(CollectingHandler):
                 result.append(
                     CollectedImage(
                         url=url,
-                        alt=None,
                         source=f".product-details__gallery {selector}",
                     )
                 )
@@ -245,7 +237,6 @@ class ShkatulkaCollectingHandler(CollectingHandler):
                     result.append(
                         CollectedImage(
                             url=url,
-                            alt=self._clean_text(alt) if alt else None,
                             source=f".product-details__gallery {selector}",
                         )
                     )

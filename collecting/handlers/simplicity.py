@@ -43,20 +43,13 @@ class SimplicityCollectingHandler(CollectingHandler):
             url=record.url,
             site=record.site,
             category=record.category,
-            source_page=record.source_page,
             title=title,
-            difficulty=None,
             similar_patterns=[],
             description=description,
             collection=None,
             season=None,
             style=None,
             images=images,
-            review_images=[],
-            raw_sections=raw_sections,
-            raw={
-                "html_title": await page.title(),
-            },
         )
 
     async def _close_cookie_banner(self, page: Page) -> None:
@@ -388,7 +381,6 @@ class SimplicityCollectingHandler(CollectingHandler):
         result.append(
             CollectedImage(
                 url=url,
-                alt=self._clean_text(alt) if alt else None,
                 source=source,
             )
         )

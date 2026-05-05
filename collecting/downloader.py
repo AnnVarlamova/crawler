@@ -45,7 +45,6 @@ async def download_images(product: CollectedProduct, product_dir: Path) -> Colle
         "Referer": product.url,
     }
 
-    product.raw.setdefault("image_download_errors", [])
 
     logger.debug(
         "Start image downloading product=%s images=%s dir=%s",
@@ -79,12 +78,6 @@ async def download_images(product: CollectedProduct, product_dir: Path) -> Colle
             except Exception as e:
                 image.local_path = None
 
-                product.raw["image_download_errors"].append(
-                    {
-                        "url": image.url,
-                        "error": repr(e),
-                    }
-                )
 
                 logger.warning(
                     "Image download failed product=%s image=%s error=%r",

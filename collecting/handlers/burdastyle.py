@@ -37,18 +37,10 @@ class BurdaStyleCollectingHandler(CollectingHandler):
             url=record.url,
             site=record.site,
             category=record.category,
-            source_page=record.source_page,
             title=title,
-            difficulty=None,
             similar_patterns=similar_patterns,
             description=description,
             images=images,
-            review_images=[],
-            raw_sections=raw_sections,
-            raw={
-                "html_title": await page.title(),
-                "tags": similar_patterns,
-            },
         )
 
     async def _text_or_none(self, page: Page, selector: str) -> str | None:
@@ -185,7 +177,6 @@ class BurdaStyleCollectingHandler(CollectingHandler):
                 result.append(
                     CollectedImage(
                         url=url,
-                        alt=self._clean_text(alt) if alt else None,
                         source=f".pattern-gallery__images {selector}",
                     )
                 )
