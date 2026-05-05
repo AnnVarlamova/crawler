@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from urllib.parse import urljoin
 
 from playwright.async_api import Page
@@ -31,27 +30,20 @@ class HelpersewCollectingHandler(CollectingHandler):
             )
 
         title = await self._title(page)
-        difficulty_text = await self._difficulty_text(page)
-        difficulty = self._difficulty_to_number(difficulty_text)
         description = await self._description(page)
         images = await self._images(page, record.url)
 
         logger.debug(
-            "Parsed Helpersew product title=%r difficulty=%r difficulty_text=%r images=%s url=%s",
+            "Parsed Helpersew product title=%r images=%s url=%s",
             title,
-            difficulty,
-            difficulty_text,
             len(images),
             record.url,
         )
 
-        raw_sections = {}
+        raw_sections: dict[str, str] = {}
 
         if description:
             raw_sections["Описание"] = description
-
-        if difficulty_text:
-            raw_sections["Сложность"] = difficulty_text
 
         return CollectedProduct(
             url=record.url,
@@ -59,14 +51,17 @@ class HelpersewCollectingHandler(CollectingHandler):
             category=record.category,
             source_page=record.source_page,
             title=title,
-            difficulty=difficulty,
+            difficulty=None,
             similar_patterns=[],
             description=description,
+            collection=None,
+            season=None,
+            style=None,
             images=images,
+            review_images=[],
             raw_sections=raw_sections,
             raw={
                 "html_title": await page.title(),
-                "difficulty_text": difficulty_text,
             },
         )
 
@@ -96,10 +91,7 @@ class HelpersewCollectingHandler(CollectingHandler):
             "доступ запрещен",
         ]
 
-        if any(part in lower_text for part in bad_text_parts):
-            return True
-
-        return False
+        return any(part in lower_text for part in bad_text_parts)
 
     async def _title(self, page: Page) -> str | None:
         selectors = [
@@ -116,64 +108,6 @@ class HelpersewCollectingHandler(CollectingHandler):
 
         return None
 
-    async def _difficulty_text(self, page: Page) -> str | None:
-        selectors = [
-            ".cat-detail-difficult",
-            ".cat-detail__difficult",
-            "[class*='difficult']",
-        ]
-
-        for selector in selectors:
-            text = await self._text_or_none(page, selector)
-            if text and "слож" in text.lower():
-                return self._normalize_difficulty_text(text)
-
-        body_text = self._clean_text(await page.locator("body").inner_text())
-        match = re.search(
-            r"уровень\s+сложности\s*:\s*([А-Яа-яA-Za-z0-9\s\-]+)",
-            body_text,
-            flags=re.IGNORECASE,
-        )
-
-        if match:
-            return self._normalize_difficulty_text(match.group(0))
-
-        return None
-
-    def _difficulty_to_number(self, difficulty_text: str | None) -> int | None:
-        """
-        У Helpersew сложность текстовая:
-        - простой / низкий / легкий -> 1
-        - средний -> 3
-        - сложный / высокий -> 5
-
-        В metadata сохраняем число для общего поля difficulty,
-        а исходный текст кладём в raw["difficulty_text"].
-        """
-        if not difficulty_text:
-            return None
-
-        lower = difficulty_text.lower()
-
-        if any(word in lower for word in ["простой", "низкий", "лёгкий", "легкий", "начальный"]):
-            return 1
-
-        if "сред" in lower:
-            return 3
-
-        if any(word in lower for word in ["слож", "высок"]):
-            return 5
-
-        return None
-
-    def _normalize_difficulty_text(self, text: str) -> str:
-        text = self._clean_text(text)
-        text = text.replace("Уровень сложности :", "Уровень сложности:")
-        text = text.replace("Уровень сложности:", "Уровень сложности: ")
-        text = re.sub(r"\s+", " ", text).strip()
-        text = text.replace(":  ", ": ")
-        return text
-
     async def _description(self, page: Page) -> str | None:
         """
         По DOM описание находится здесь:
@@ -183,7 +117,6 @@ class HelpersewCollectingHandler(CollectingHandler):
             .cat-detail-t-cont-item.active
 
         Там текст может быть прямо текстовыми нодами + <br>.
-        inner_text() должен собрать его нормально.
         """
         selectors = [
             ".cat-detail-t-cont-item.active",
@@ -199,7 +132,10 @@ class HelpersewCollectingHandler(CollectingHandler):
             count = await loc.count()
 
             for i in range(min(count, 3)):
-                text = self._clean_text(await loc.nth(i).inner_text())
+                try:
+                    text = self._clean_text(await loc.nth(i).inner_text(timeout=5000))
+                except Exception:
+                    continue
 
                 if self._looks_like_description(text):
                     candidates.append(text)
@@ -214,96 +150,193 @@ class HelpersewCollectingHandler(CollectingHandler):
 
     async def _images(self, page: Page, page_url: str) -> list[CollectedImage]:
         """
-        Helpersew хранит фото в блоке:
+        Helpersew: один <picture class="cat-detail__pic" counter="..."> = одна фотография.
 
-        .cat-detail__pics
-          picture.cat-detail__pic.loaded
-          picture.cat-detail__pic.check.loaded
+        Внутри picture может быть несколько source/img для разных размеров и форматов.
+        Поэтому НЕ обходим отдельно все source и все img как независимые картинки.
+        Иначе получаются дубли одной фотографии в разных размерах.
 
-        Внутри могут быть img[src] и source[srcset].
-        Берём только изображения из карточки, чтобы не прихватить логотипы.
+        Берём ровно один лучший URL из каждого picture.
         """
         result: list[CollectedImage] = []
-        seen: set[str] = set()
+        seen_urls: set[str] = set()
+        seen_counters: set[str] = set()
 
-        img_selectors = [
-            ".cat-detail__pics picture.cat-detail__pic img[src]",
-            ".cat-detail__pics .cat-detail__pic img[src]",
-            ".cat-detail__pics img[src]",
-            ".cat-detail__l-wrap img[src]",
-            ".cat-detail img[src]",
-        ]
+        gallery_root = page.locator(".cat-detail__l-wrap .cat-detail__pics")
+        if await gallery_root.count() == 0:
+            gallery_root = page.locator(".cat-detail__pics")
 
-        for selector in img_selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
+        if await gallery_root.count() == 0:
+            logger.warning("Helpersew gallery root not found url=%s", page_url)
+            return result
 
-            for i in range(count):
-                img = loc.nth(i)
+        root = gallery_root.first
 
-                src = await img.get_attribute("src")
-                alt = await img.get_attribute("alt")
+        pictures = root.locator("picture.cat-detail__pic")
+        picture_count = await pictures.count()
 
-                if not src:
-                    src = await img.get_attribute("data-src")
+        for i in range(picture_count):
+            picture = pictures.nth(i)
+            counter = await picture.get_attribute("counter")
 
-                if not src:
-                    continue
+            if counter and counter in seen_counters:
+                continue
 
-                url = urljoin(page_url, src.strip())
+            candidates: list[str] = []
 
-                if not self._looks_like_real_image(url):
-                    continue
+            # 1. img-атрибуты
+            imgs = picture.locator("img")
+            img_count = await imgs.count()
 
-                if url in seen:
-                    continue
+            alt: str | None = None
 
-                seen.add(url)
+            for j in range(img_count):
+                img = imgs.nth(j)
 
-                result.append(
-                    CollectedImage(
-                        url=url,
-                        alt=self._clean_text(alt) if alt else None,
-                        source=selector,
-                    )
+                if alt is None:
+                    alt = await img.get_attribute("alt")
+
+                for attr in ["data-original", "data-src", "data-lazy", "src"]:
+                    value = await img.get_attribute(attr)
+                    if value:
+                        candidates.append(value)
+
+            # 2. source/srcset внутри этого же picture
+            sources = picture.locator("source[srcset]")
+            source_count = await sources.count()
+
+            for j in range(source_count):
+                srcset = await sources.nth(j).get_attribute("srcset")
+                candidates.extend(self._extract_srcset_urls(srcset))
+
+            best = self._pick_best_candidate(candidates, page_url)
+
+            if not best:
+                continue
+
+            if best in seen_urls:
+                continue
+
+            seen_urls.add(best)
+            if counter:
+                seen_counters.add(counter)
+
+            result.append(
+                CollectedImage(
+                    url=best,
+                    alt=self._clean_text(alt) if alt else None,
+                    source=f".cat-detail__pics picture.cat-detail__pic[counter={counter}]",
                 )
-
-        source_selectors = [
-            ".cat-detail__pics picture.cat-detail__pic source[srcset]",
-            ".cat-detail__pics source[srcset]",
-            ".cat-detail source[srcset]",
-        ]
-
-        for selector in source_selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
-
-            for i in range(count):
-                srcset = await loc.nth(i).get_attribute("srcset")
-                url = self._best_from_srcset(srcset)
-
-                if not url:
-                    continue
-
-                url = urljoin(page_url, url.strip())
-
-                if not self._looks_like_real_image(url):
-                    continue
-
-                if url in seen:
-                    continue
-
-                seen.add(url)
-
-                result.append(
-                    CollectedImage(
-                        url=url,
-                        alt=None,
-                        source=selector,
-                    )
-                )
+            )
 
         return result
+
+    def _extract_srcset_urls(self, srcset: str | None) -> list[str]:
+        if not srcset:
+            return []
+
+        urls: list[str] = []
+
+        for part in srcset.split(","):
+            part = part.strip()
+            if not part:
+                continue
+
+            # srcset формат: "url 1x" или "url 800w"
+            url = part.split()[0].strip()
+            if url:
+                urls.append(url)
+
+        return urls
+
+    def _pick_best_candidate(self, candidates: list[str], page_url: str) -> str | None:
+        normalized: list[str] = []
+
+        for candidate in candidates:
+            url = urljoin(page_url, candidate.strip())
+
+            if not self._looks_like_product_image(url):
+                continue
+
+            if url not in normalized:
+                normalized.append(url)
+
+        if not normalized:
+            return None
+
+        def score(url: str) -> tuple[int, int]:
+            lower = url.lower()
+
+            s = 0
+
+            # Оригинал обычно лучше resize_cache.
+            if "/upload/iblock/" in lower:
+                s += 1000
+
+            # resize_cache тоже ок, но это уже производная версия.
+            if "/upload/resize_cache/" in lower:
+                s += 500
+
+            # Избегаем слишком маленьких превью.
+            bad_size_parts = [
+                "/50_",
+                "/80_",
+                "/100_",
+                "/120_",
+                "/150_",
+                "/200_",
+                "/250_",
+            ]
+            if any(part in lower for part in bad_size_parts):
+                s -= 300
+
+            # Пытаемся угадать большие размеры из URL.
+            # Например resize_cache/.../900_1200_...
+            import re
+
+            numbers = [int(x) for x in re.findall(r"(?<!\d)(\d{2,4})(?!\d)", lower)]
+            size_bonus = max(numbers) if numbers else 0
+
+            return s, size_bonus
+
+        return max(normalized, key=score)
+
+    def _looks_like_product_image(self, url: str) -> bool:
+        lower = url.lower()
+
+        # Убираем webp как альтернативный формат, чтобы не плодить дубли.
+        if ".webp" in lower:
+            return False
+
+        if not any(ext in lower for ext in [".jpg", ".jpeg", ".png"]):
+            return False
+
+        good_parts = [
+            "/upload/iblock/",
+            "/upload/resize_cache/",
+            "/upload/",
+        ]
+
+        if not any(part in lower for part in good_parts):
+            return False
+
+        bad_parts = [
+            "logo",
+            "sprite",
+            "icon",
+            "placeholder",
+            "avatar",
+            "banner",
+            "payment",
+            "social",
+            "loader",
+            "preloader",
+            "star",
+            "rating",
+            "favicon",
+        ]
+
+        return not any(part in lower for part in bad_parts)
 
     async def _text_or_none(self, page: Page, selector: str) -> str | None:
         loc = page.locator(selector)
@@ -311,25 +344,23 @@ class HelpersewCollectingHandler(CollectingHandler):
         if await loc.count() == 0:
             return None
 
-        text = await loc.first.inner_text()
+        try:
+            text = await loc.first.inner_text(timeout=5000)
+        except Exception:
+            return None
+
         text = self._clean_text(text)
 
         return text or None
 
-    def _best_from_srcset(self, srcset: str | None) -> str | None:
-        if not srcset:
-            return None
-
-        parts = [part.strip() for part in srcset.split(",") if part.strip()]
-        if not parts:
-            return None
-
-        return parts[-1].split()[0]
-
-    def _looks_like_real_image(self, url: str) -> bool:
+    def _looks_like_product_image(self, url: str) -> bool:
         lower = url.lower()
 
-        if not any(ext in lower for ext in [".jpg", ".jpeg", ".png", ".webp"]):
+        if not any(ext in lower for ext in [".jpg", ".jpeg", ".png"]):
+            return False
+
+        # Специально не разрешаем webp, потому что они у тебя сейчас лишние.
+        if ".webp" in lower:
             return False
 
         bad_parts = [
