@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import asyncio
+import random
 import traceback
 
 from collecting.browser import light_scroll, new_browser, new_page, safe_goto
 from collecting.config import (
     COLLECTED_DIR,
+    DEBUG_DIR,
     ERRORS_FILE,
     LINKS_DIR,
     PROCESSED_FILE,
@@ -17,13 +19,13 @@ from collecting.io import (
     append_jsonl,
     get_product_dir,
     load_link_records,
+    product_id_from_url,
     read_jsonl,
+    round_robin_records,
     save_product,
 )
 from collecting.logging_utils import setup_logging
 from collecting.models import LinkRecord
-from collecting.config import DEBUG_DIR
-from collecting.io import product_id_from_url
 
 logger = setup_logging()
 
@@ -116,10 +118,14 @@ async def process_one(record: LinkRecord, browser) -> None:
         except Exception as e:
             last_error = e
             last_traceback = traceback.format_exc()
+
             if page is not None:
                 try:
                     DEBUG_DIR.mkdir(parents=True, exist_ok=True)
-                    debug_path = DEBUG_DIR / f"{record.site}_{product_id_from_url(record.url)}_attempt_{attempt + 1}.html"
+                    debug_path = (
+                        DEBUG_DIR
+                        / f"{record.site}_{product_id_from_url(record.url)}_attempt_{attempt + 1}.html"
+                    )
                     debug_path.write_text(await page.content(), encoding="utf-8")
                     logger.error("Saved debug html: %s", debug_path)
                 except Exception:
@@ -158,16 +164,28 @@ async def process_one(record: LinkRecord, browser) -> None:
     )
 
 
-async def run(site: str | None = None, limit: int | None = None) -> None:
+async def run(
+    site: str | None = None,
+    limit: int | None = None,
+    round_robin: bool = False,
+) -> None:
     records = load_link_records(LINKS_DIR, site=site)
 
     processed = load_processed_urls()
     records = [record for record in records if record.url not in processed]
 
+    if round_robin and site is None:
+        records = round_robin_records(records)
+
     if limit is not None:
         records = records[:limit]
 
-    logger.info("To collect: %s", len(records))
+    logger.info(
+        "To collect: %s site=%s round_robin=%s",
+        len(records),
+        site,
+        round_robin,
+    )
 
     playwright, browser = await new_browser()
 
@@ -189,5 +207,15 @@ async def run(site: str | None = None, limit: int | None = None) -> None:
         logger.info("Collecting finished")
 
 
-def run_sync(site: str | None = None, limit: int | None = None) -> None:
-    asyncio.run(run(site=site, limit=limit))
+def run_sync(
+    site: str | None = None,
+    limit: int | None = None,
+    round_robin: bool = False,
+) -> None:
+    asyncio.run(
+        run(
+            site=site,
+            limit=limit,
+            round_robin=round_robin,
+        )
+    )

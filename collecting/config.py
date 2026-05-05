@@ -38,7 +38,6 @@ RETRY_COUNT = int(os.getenv("RETRY_COUNT", "2"))
 
 SUPPORTED_SITES = {
     "burdastyle",
-    "etsy",
     "grasser",
     "helpersew",
     "marfy",
