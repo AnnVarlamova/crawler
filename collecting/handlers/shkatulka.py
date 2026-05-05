@@ -33,7 +33,6 @@ class ShkatulkaCollectingHandler(CollectingHandler):
         )
 
         raw_sections: dict[str, str] = {}
-
         if description:
             raw_sections["Описание"] = description
 
@@ -73,23 +72,6 @@ class ShkatulkaCollectingHandler(CollectingHandler):
         return None
 
     async def _description(self, page: Page) -> str | None:
-        """
-        На Шкатулке описание лежит внутри:
-
-        #productDescription
-
-        Но у нужного абзаца нет своего класса.
-        Перед ним стоит картинка-вешалка:
-
-        <p>
-          <img src="/data/uploads/pattern/6/01/4.png">
-          <span>Выкройка женского...</span>
-          ...
-        </p>
-
-        Поэтому ищем p внутри #productDescription, где есть img,
-        и при этом текст достаточно длинный.
-        """
         description = await page.evaluate(
             """
             () => {
@@ -111,12 +93,13 @@ class ShkatulkaCollectingHandler(CollectingHandler):
                     'Для ознакомления доступны',
                     'После оформления заказа',
                     'Параметры модели',
-                    'Таблица размеров'
+                    'Таблица размеров',
+                    'Что вы получите после оплаты'
                 ];
 
                 const paragraphs = Array.from(root.querySelectorAll('p'));
 
-                // 1. Главный вариант: абзац с картинкой-вешалкой и длинным текстом.
+                // Основной вариант: абзац, где перед описанием стоит картинка-вешалка.
                 for (const p of paragraphs) {
                     const hasImage = !!p.querySelector('img');
                     const text = clean(p.textContent);
@@ -130,7 +113,7 @@ class ShkatulkaCollectingHandler(CollectingHandler):
                     return text;
                 }
 
-                // 2. Fallback: первый длинный абзац без служебного текста.
+                // Fallback: первый длинный нормальный абзац.
                 for (const p of paragraphs) {
                     const text = clean(p.textContent);
 
@@ -142,15 +125,7 @@ class ShkatulkaCollectingHandler(CollectingHandler):
                     return text;
                 }
 
-                // 3. Последний fallback: весь блок, но без явного мусора.
-                const cloned = root.cloneNode(true);
-                cloned.querySelectorAll('img, script, style').forEach(el => el.remove());
-
-                const text = clean(cloned.textContent);
-
-                if (!text) return null;
-
-                return text;
+                return null;
             }
             """
         )
@@ -158,104 +133,122 @@ class ShkatulkaCollectingHandler(CollectingHandler):
         if not description:
             return None
 
-        description = self._clean_text(description)
-
-        return description or None
+        return self._clean_text(description) or None
 
     async def _images(self, page: Page, page_url: str) -> list[CollectedImage]:
         """
-        На Шкатулке галерея выглядит примерно так:
+        Строго только товарная галерея Шкатулки:
 
-        .details-gallery
-          .slider-for
-            a.main_modal_gallery[href="/data/uploads/pattern/...jpg"]
-          .slider-nav
-            a[href]
-            img[src]
+        <div class="product-details__gallery details-gallery">
+          <div class="details-gallery__wrap">
+            <div class="details-gallery__wrap-inner">
+              <div class="slider slider-for ...">
+                <a class="main_modal_gallery ..." href="/data/uploads/pattern/...jpg">
+              ...
+              <div class="slider slider-nav ...">
+                ...
+              </div>
+            </div>
+          </div>
+        </div>
 
-        Берём href из ссылок, потому что это обычно крупное изображение.
+        НЕ используем:
+          .product-details img
+          main img
+          #productDescription img
+        потому что они тянут вешалку, описания, отзывы, иконки и мусор.
         """
         result: list[CollectedImage] = []
         seen: set[str] = set()
 
+        gallery_root = page.locator(".product-details__gallery.details-gallery")
+        if await gallery_root.count() == 0:
+            gallery_root = page.locator(".details-gallery")
+
+        if await gallery_root.count() == 0:
+            logger.warning("Shkatulka gallery root not found url=%s", page_url)
+            return result
+
+        root = gallery_root.first
+
+        # 1. Лучший источник — href у main_modal_gallery.
         link_selectors = [
-            ".details-gallery a.main_modal_gallery[href]",
-            ".details-gallery .slider-for a[href]",
-            ".details-gallery .slider-nav a[href]",
-            ".details-gallery a[href]",
+            ".slider-for a.main_modal_gallery[href]",
+            "a.main_modal_gallery[href]",
+            ".slider-for a[href]",
         ]
 
         for selector in link_selectors:
-            loc = page.locator(selector)
+            loc = root.locator(selector)
             count = await loc.count()
 
             for i in range(count):
                 href = await loc.nth(i).get_attribute("href")
-
                 if not href:
                     continue
 
                 url = urljoin(page_url, href.strip())
 
-                if not self._looks_like_real_image(url):
+                if not self._looks_like_product_image(url):
                     continue
 
                 if url in seen:
                     continue
 
                 seen.add(url)
-
                 result.append(
                     CollectedImage(
                         url=url,
                         alt=None,
-                        source=selector,
+                        source=f".product-details__gallery {selector}",
                     )
                 )
 
-        img_selectors = [
-            ".details-gallery img[src]",
-            ".details-gallery img[data-src]",
-            ".details-gallery img[data-lazy]",
-            ".product-details__gallery img[src]",
-            ".product-details img[src]",
-        ]
+            if result:
+                break
 
-        for selector in img_selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
+        # 2. Только если href не нашли — img внутри этой же галереи.
+        if not result:
+            img_selectors = [
+                ".slider-for img[src]",
+                ".slider-nav img[src]",
+                "img[src]",
+            ]
 
-            for i in range(count):
-                img = loc.nth(i)
+            for selector in img_selectors:
+                loc = root.locator(selector)
+                count = await loc.count()
 
-                src = await img.get_attribute("src")
-                if not src:
-                    src = await img.get_attribute("data-src")
-                if not src:
-                    src = await img.get_attribute("data-lazy")
+                for i in range(count):
+                    img = loc.nth(i)
 
-                alt = await img.get_attribute("alt")
+                    src = await img.get_attribute("src")
+                    if not src:
+                        src = await img.get_attribute("data-src")
+                    if not src:
+                        src = await img.get_attribute("data-lazy")
 
-                if not src:
-                    continue
+                    alt = await img.get_attribute("alt")
 
-                url = urljoin(page_url, src.strip())
+                    if not src:
+                        continue
 
-                if not self._looks_like_real_image(url):
-                    continue
+                    url = urljoin(page_url, src.strip())
 
-                if url in seen:
-                    continue
+                    if not self._looks_like_product_image(url):
+                        continue
 
-                seen.add(url)
+                    if url in seen:
+                        continue
 
-                result.append(
-                    CollectedImage(
-                        url=url,
-                        alt=self._clean_text(alt) if alt else None,
-                        source=selector,
+                    seen.add(url)
+                    result.append(
+                        CollectedImage(
+                            url=url,
+                            alt=self._clean_text(alt) if alt else None,
+                            source=f".product-details__gallery {selector}",
+                        )
                     )
-                )
 
         return result
 
@@ -271,13 +264,16 @@ class ShkatulkaCollectingHandler(CollectingHandler):
             return None
 
         text = self._clean_text(text)
-
         return text or None
 
-    def _looks_like_real_image(self, url: str) -> bool:
+    def _looks_like_product_image(self, url: str) -> bool:
         lower = url.lower()
 
         if not any(ext in lower for ext in [".jpg", ".jpeg", ".png", ".webp"]):
+            return False
+
+        # Для Шкатулки товарные картинки обычно лежат здесь.
+        if "/data/uploads/pattern/" not in lower:
             return False
 
         bad_parts = [
@@ -293,6 +289,8 @@ class ShkatulkaCollectingHandler(CollectingHandler):
             "preloader",
             "rating",
             "star",
+            "review",
+            "otzyv",
         ]
 
         return not any(part in lower for part in bad_parts)

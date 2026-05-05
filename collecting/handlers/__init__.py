@@ -7,6 +7,7 @@ from collecting.handlers.helpersew import HelpersewCollectingHandler
 from collecting.handlers.marfy import MarfyCollectingHandler
 from collecting.handlers.shkatulka import ShkatulkaCollectingHandler
 from collecting.handlers.simplicity import SimplicityCollectingHandler
+from collecting.handlers.vikisews import VikisewsCollectingHandler
 
 
 HANDLERS: dict[str, type[CollectingHandler]] = {
@@ -16,8 +17,8 @@ HANDLERS: dict[str, type[CollectingHandler]] = {
     "marfy": MarfyCollectingHandler,
     "shkatulka": ShkatulkaCollectingHandler,
     "simplicity": SimplicityCollectingHandler,
+    "vikisews": VikisewsCollectingHandler,
 
     # Потом добавим:
-    # "vikisews": VikisewsCollectingHandler,
     # "etsy": EtsyCollectingHandler,
 }
