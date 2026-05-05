@@ -369,108 +369,65 @@ class MarfyCollectingHandler(CollectingHandler):
         return result
 
     async def _images(self, page: Page, page_url: str) -> list[CollectedImage]:
+        """
+        Marfy: берём только картинки из большой галереи товара на экране.
+
+        Нужный блок:
+          #product-images-large
+            .product-image-large
+              .easyzoom
+                a[href="...large_default/...jpg"]
+                  img
+
+        Не берём:
+          #product-images-thumbs
+          .product-images-thumbs
+          img[data-image-large-src] по всей странице
+          img.thumb[src]
+
+        Иначе скачиваются миниатюры, дубли и картинки не из текущей большой галереи.
+        """
         result: list[CollectedImage] = []
         seen: set[str] = set()
 
-        attr_selectors = [
-            (".product-images-large img[data-image-large-src]", "data-image-large-src"),
-            (".product-images-thumbs img[data-image-large-src]", "data-image-large-src"),
-            ("img[data-image-large-src]", "data-image-large-src"),
-            (".product-images-large img[data-full-size-image-url]", "data-full-size-image-url"),
-            ("img[data-full-size-image-url]", "data-full-size-image-url"),
-        ]
+        gallery_root = page.locator("#product-images-large")
 
-        for selector, attr in attr_selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
+        if await gallery_root.count() == 0:
+            gallery_root = page.locator(".product-images-large")
 
-            for i in range(count):
-                img = loc.nth(i)
-                url_raw = await img.get_attribute(attr)
-                alt = await img.get_attribute("alt")
+        if await gallery_root.count() == 0:
+            logger.warning("Marfy large gallery root not found url=%s", page_url)
+            return result
 
-                if not url_raw:
-                    continue
+        root = gallery_root.first
 
-                url = urljoin(page_url, url_raw.strip())
-
-                if not self._looks_like_real_image(url):
-                    continue
-
-                if url in seen:
-                    continue
-
-                seen.add(url)
-
-                result.append(
-                    CollectedImage(
-                        url=url,
-                        alt=self._clean_text(alt) if alt else None,
-                        source=f"{selector}@{attr}",
-                    )
-                )
-
+        # 1. Главный источник — href у easyzoom-ссылки.
         link_selectors = [
-            ".product-images-large a[href]",
-            ".images-container a[href]",
-            ".product-cover a[href]",
+            ".easyzoom a[href]",
+            ".product-image-large a[href]",
+            "a[href]",
         ]
 
         for selector in link_selectors:
-            loc = page.locator(selector)
+            loc = root.locator(selector)
             count = await loc.count()
 
             for i in range(count):
-                href = await loc.nth(i).get_attribute("href")
+                link = loc.nth(i)
 
+                href = await link.get_attribute("href")
                 if not href:
                     continue
 
+                img = link.locator("img").first
+                alt = None
+
+                if await img.count() > 0:
+                    alt = await img.get_attribute("alt")
+
                 url = urljoin(page_url, href.strip())
 
-                if not self._looks_like_real_image(url):
-                    continue
-
-                if url in seen:
-                    continue
-
-                seen.add(url)
-
-                result.append(
-                    CollectedImage(
-                        url=url,
-                        alt=None,
-                        source=selector,
-                    )
-                )
-
-        img_selectors = [
-            ".product-images-large img[src]",
-            ".product-images-thumbs img[src]",
-            ".images-container img[src]",
-            ".product-cover img[src]",
-            "img.thumb[src]",
-        ]
-
-        for selector in img_selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
-
-            for i in range(count):
-                img = loc.nth(i)
-
-                src = await img.get_attribute("src")
-                alt = await img.get_attribute("alt")
-
-                if not src:
-                    src = await img.get_attribute("data-src")
-
-                if not src:
-                    continue
-
-                url = urljoin(page_url, src.strip())
-
-                if not self._looks_like_real_image(url):
+                if not self._looks_like_marfy_gallery_image(url):
                     continue
 
                 if url in seen:
@@ -482,46 +439,97 @@ class MarfyCollectingHandler(CollectingHandler):
                     CollectedImage(
                         url=url,
                         alt=self._clean_text(alt) if alt else None,
-                        source=selector,
+                        source=f"#product-images-large {selector}",
                     )
                 )
 
-        source_selectors = [
-            ".product-images-large source[srcset]",
-            ".product-images-thumbs source[srcset]",
-            ".images-container source[srcset]",
-        ]
+            if result:
+                break
 
-        for selector in source_selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
+        # 2. Fallback: если href почему-то нет, берём img из этой же большой галереи.
+        if not result:
+            img_selectors = [
+                ".product-image-large img[src]",
+                ".easyzoom img[src]",
+                "img[src]",
+            ]
 
-            for i in range(count):
-                srcset = await loc.nth(i).get_attribute("srcset")
-                url_raw = self._best_from_srcset(srcset)
+            for selector in img_selectors:
+                loc = root.locator(selector)
+                count = await loc.count()
 
-                if not url_raw:
-                    continue
+                for i in range(count):
+                    img = loc.nth(i)
 
-                url = urljoin(page_url, url_raw.strip())
+                    src = await img.get_attribute("data-image-large-src")
+                    if not src:
+                        src = await img.get_attribute("data-full-size-image-url")
+                    if not src:
+                        src = await img.get_attribute("src")
 
-                if not self._looks_like_real_image(url):
-                    continue
+                    alt = await img.get_attribute("alt")
 
-                if url in seen:
-                    continue
+                    if not src:
+                        continue
 
-                seen.add(url)
+                    url = urljoin(page_url, src.strip())
 
-                result.append(
-                    CollectedImage(
-                        url=url,
-                        alt=None,
-                        source=selector,
+                    if not self._looks_like_marfy_gallery_image(url):
+                        continue
+
+                    if url in seen:
+                        continue
+
+                    seen.add(url)
+
+                    result.append(
+                        CollectedImage(
+                            url=url,
+                            alt=self._clean_text(alt) if alt else None,
+                            source=f"#product-images-large {selector}",
+                        )
                     )
-                )
+
+            if result:
+                return result
 
         return result
+
+    def _looks_like_marfy_gallery_image(self, url: str) -> bool:
+        lower = url.lower()
+
+        if not any(ext in lower for ext in [".jpg", ".jpeg", ".png", ".webp"]):
+            return False
+
+        # Для нужных картинок Marfy на скрине URL вида:
+        # /22223-thickbox_default/sewing-pattern-8119.jpg
+        # или /22223-large_default/sewing-pattern-8119.jpg
+        good_parts = [
+            "marfy.it/",
+            "/large_default/",
+            "/thickbox_default/",
+            "/home_default/",
+        ]
+
+        if not any(part in lower for part in good_parts):
+            return False
+
+        bad_parts = [
+            "logo",
+            "sprite",
+            "icon",
+            "placeholder",
+            "avatar",
+            "banner",
+            "payment",
+            "social",
+            "loader",
+            "preloader",
+            "flag",
+            "language",
+        ]
+
+        return not any(part in lower for part in bad_parts)
 
     async def _text_or_none(self, page: Page, selector: str) -> str | None:
         loc = page.locator(selector)
