@@ -189,38 +189,49 @@ class VikisewsCollectingHandler(CollectingHandler):
 
     async def _images(self, page: Page, page_url: str) -> list[CollectedImage]:
         """
-        На Vikisews картинки видны в вертикальном preview-слайдере:
+        Vikisews: берём большие картинки из скрытых product-slide.
 
-          .swiper-preview-vertical img.preview.img-fluid
-          .main-slider img
-          img.preview.img-fluid.img-resize.intrinsic-item
+        По DOM:
+          .main-slider
+            .product-slide.d-none
+              img.img-fluid.zoom-img.intrinsic-item.img-big.img-gallery
+                data-big-src=".../media/patterns/...jpg"
 
-        В src обычно уже лежит нормальная CDN-ссылка:
-          https://storage.yandexcloud.net/vikisews-public-media/...
+        Нужный URL — именно data-big-src.
+        src/data-src часто ведут на cache-превью меньшего размера.
         """
         result: list[CollectedImage] = []
         seen: set[str] = set()
 
+        gallery_root = page.locator(".main-slider")
+
+        if await gallery_root.count() == 0:
+            logger.warning("Vikisews main slider root not found url=%s", page_url)
+            return result
+
+        root = gallery_root.first
+
         img_selectors = [
-            ".main-slider img[src]",
-            ".swiper-preview-vertical img[src]",
-            "img.preview.img-fluid[src]",
-            "img.img-resize[src]",
-            "main img[src]",
+            ".product-slide.d-none img.img-big.img-gallery",
+            ".product-slide.d-none img[data-big-src]",
+            ".product-slide img.img-big.img-gallery",
+            ".product-slide img[data-big-src]",
         ]
 
         for selector in img_selectors:
-            loc = page.locator(selector)
+            loc = root.locator(selector)
             count = await loc.count()
 
             for i in range(count):
                 img = loc.nth(i)
 
-                src = await img.get_attribute("src")
+                src = await img.get_attribute("data-big-src")
+                if not src:
+                    src = await img.get_attribute("data-original")
                 if not src:
                     src = await img.get_attribute("data-src")
                 if not src:
-                    src = await img.get_attribute("data-lazy")
+                    src = await img.get_attribute("src")
 
                 alt = await img.get_attribute("alt")
 
@@ -241,44 +252,12 @@ class VikisewsCollectingHandler(CollectingHandler):
                     CollectedImage(
                         url=url,
                         alt=self._clean_text(alt) if alt else None,
-                        source=selector,
+                        source=f".main-slider {selector}@data-big-src",
                     )
                 )
 
-        source_selectors = [
-            ".main-slider source[srcset]",
-            ".swiper-preview-vertical source[srcset]",
-            "main source[srcset]",
-        ]
-
-        for selector in source_selectors:
-            loc = page.locator(selector)
-            count = await loc.count()
-
-            for i in range(count):
-                srcset = await loc.nth(i).get_attribute("srcset")
-                url_raw = self._best_from_srcset(srcset)
-
-                if not url_raw:
-                    continue
-
-                url = urljoin(page_url, url_raw.strip())
-
-                if not self._looks_like_product_image(url):
-                    continue
-
-                if url in seen:
-                    continue
-
-                seen.add(url)
-
-                result.append(
-                    CollectedImage(
-                        url=url,
-                        alt=None,
-                        source=selector,
-                    )
-                )
+            if result:
+                break
 
         return result
 
@@ -289,18 +268,34 @@ class VikisewsCollectingHandler(CollectingHandler):
             return False
 
         good_parts = [
-            "vikisews-public-media",
-            "/media/cache/",
-            "/upload/",
-            "/storage/",
-            "/media/",
+            "storage.yandexcloud.net/vikisews-public-media/media/patterns/",
+            "vikisews-public-media/media/patterns/",
+            "storage.yandexcloud.net/vikisews-public-media",
         ]
 
-        # Если это CDN Vikisews — почти наверняка нужная картинка.
-        if any(part in lower for part in good_parts):
-            return not self._is_bad_image_url(lower)
+        if not any(part in lower for part in good_parts):
+            return False
 
-        return not self._is_bad_image_url(lower)
+        bad_parts = [
+            "logo",
+            "sprite",
+            "icon",
+            "placeholder",
+            "avatar",
+            "banner",
+            "payment",
+            "social",
+            "loader",
+            "preloader",
+            "rating",
+            "star",
+            "flag",
+            "language",
+            "cart",
+            ".svg",
+        ]
+
+        return not any(part in lower for part in bad_parts)
 
     def _is_bad_image_url(self, lower_url: str) -> bool:
         bad_parts = [
