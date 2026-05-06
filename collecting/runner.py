@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-import random
 import traceback
+from collections import defaultdict
 
 from collecting.browser import light_scroll, new_browser, new_page, safe_goto
 from collecting.config import (
@@ -10,6 +10,8 @@ from collecting.config import (
     DEBUG_DIR,
     ERRORS_FILE,
     LINKS_DIR,
+    MAX_CONCURRENT_PRODUCTS,
+    MAX_PER_SITE,
     PROCESSED_FILE,
     RETRY_COUNT,
 )
@@ -33,6 +35,19 @@ logger = setup_logging()
 def load_processed_urls() -> set[str]:
     rows = read_jsonl(PROCESSED_FILE)
     return {row["url"] for row in rows if row.get("url")}
+
+
+async def save_debug_html(record: LinkRecord, page, attempt: int) -> None:
+    try:
+        DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+        debug_path = (
+            DEBUG_DIR
+            / f"{record.site}_{product_id_from_url(record.url)}_attempt_{attempt}.html"
+        )
+        debug_path.write_text(await page.content(), encoding="utf-8")
+        logger.error("Saved debug html: %s", debug_path)
+    except Exception:
+        logger.exception("Failed to save debug html for url=%s", record.url)
 
 
 async def process_one(record: LinkRecord, browser) -> None:
@@ -120,16 +135,7 @@ async def process_one(record: LinkRecord, browser) -> None:
             last_traceback = traceback.format_exc()
 
             if page is not None:
-                try:
-                    DEBUG_DIR.mkdir(parents=True, exist_ok=True)
-                    debug_path = (
-                        DEBUG_DIR
-                        / f"{record.site}_{product_id_from_url(record.url)}_attempt_{attempt + 1}.html"
-                    )
-                    debug_path.write_text(await page.content(), encoding="utf-8")
-                    logger.error("Saved debug html: %s", debug_path)
-                except Exception:
-                    logger.exception("Failed to save debug html for url=%s", record.url)
+                await save_debug_html(record, page, attempt + 1)
 
             logger.exception(
                 "Collect failed attempt=%s/%s site=%s category=%s url=%s",
@@ -164,10 +170,42 @@ async def process_one(record: LinkRecord, browser) -> None:
     )
 
 
+async def worker(
+    *,
+    worker_id: int,
+    queue: asyncio.Queue[LinkRecord],
+    browser,
+    site_locks: dict[str, asyncio.Semaphore],
+) -> None:
+    while True:
+        try:
+            record = queue.get_nowait()
+        except asyncio.QueueEmpty:
+            logger.info("Worker %s finished: queue is empty", worker_id)
+            return
+
+        try:
+            site_lock = site_locks[record.site]
+
+            async with site_lock:
+                logger.info(
+                    "Worker %s processing site=%s url=%s",
+                    worker_id,
+                    record.site,
+                    record.url,
+                )
+                await process_one(record, browser)
+
+        finally:
+            queue.task_done()
+
+
 async def run(
     site: str | None = None,
     limit: int | None = None,
     round_robin: bool = False,
+    parallel: bool = False,
+    max_concurrent: int | None = None,
 ) -> None:
     records = load_link_records(LINKS_DIR, site=site)
 
@@ -181,25 +219,70 @@ async def run(
         records = records[:limit]
 
     logger.info(
-        "To collect: %s site=%s round_robin=%s",
+        "To collect: %s site=%s round_robin=%s parallel=%s",
         len(records),
         site,
         round_robin,
+        parallel,
     )
+
+    if not records:
+        logger.info("Nothing to collect")
+        return
 
     playwright, browser = await new_browser()
 
     try:
-        for index, record in enumerate(records, start=1):
-            logger.info(
-                "[%s/%s] %s: %s",
-                index,
-                len(records),
-                record.site,
-                record.url,
-            )
+        if not parallel:
+            for index, record in enumerate(records, start=1):
+                logger.info(
+                    "[%s/%s] %s: %s",
+                    index,
+                    len(records),
+                    record.site,
+                    record.url,
+                )
 
-            await process_one(record, browser)
+                await process_one(record, browser)
+
+            return
+
+        concurrency = max_concurrent or MAX_CONCURRENT_PRODUCTS
+        concurrency = max(1, concurrency)
+
+        logger.info(
+            "Parallel collecting started: max_concurrent=%s max_per_site=%s",
+            concurrency,
+            MAX_PER_SITE,
+        )
+
+        queue: asyncio.Queue[LinkRecord] = asyncio.Queue()
+
+        for record in records:
+            queue.put_nowait(record)
+
+        site_locks: dict[str, asyncio.Semaphore] = defaultdict(
+            lambda: asyncio.Semaphore(MAX_PER_SITE)
+        )
+
+        workers = [
+            asyncio.create_task(
+                worker(
+                    worker_id=i + 1,
+                    queue=queue,
+                    browser=browser,
+                    site_locks=site_locks,
+                )
+            )
+            for i in range(concurrency)
+        ]
+
+        await queue.join()
+
+        for task in workers:
+            task.cancel()
+
+        await asyncio.gather(*workers, return_exceptions=True)
 
     finally:
         await browser.close()
@@ -211,11 +294,15 @@ def run_sync(
     site: str | None = None,
     limit: int | None = None,
     round_robin: bool = False,
+    parallel: bool = False,
+    max_concurrent: int | None = None,
 ) -> None:
     asyncio.run(
         run(
             site=site,
             limit=limit,
             round_robin=round_robin,
+            parallel=parallel,
+            max_concurrent=max_concurrent,
         )
     )

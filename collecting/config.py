@@ -35,6 +35,8 @@ MAX_IMAGES_PER_PRODUCT = int(os.getenv("MAX_IMAGES_PER_PRODUCT", "30"))
 DEBUG_DIR = STATE_DIR / "debug_pages"
 
 RETRY_COUNT = int(os.getenv("RETRY_COUNT", "2"))
+MAX_CONCURRENT_PRODUCTS = int(os.getenv("MAX_CONCURRENT_PRODUCTS", "3"))
+MAX_PER_SITE = int(os.getenv("MAX_PER_SITE", "1"))
 
 SUPPORTED_SITES = {
     "burdastyle",

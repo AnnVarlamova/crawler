@@ -25,7 +25,20 @@ def main() -> None:
     parser.add_argument(
         "--round-robin",
         action="store_true",
-        help="Interleave products from different sites instead of collecting one site/category sequentially",
+        help="Interleave products from different sites",
+    )
+
+    parser.add_argument(
+        "--parallel",
+        action="store_true",
+        help="Process several products in parallel, but no more than MAX_PER_SITE per site",
+    )
+
+    parser.add_argument(
+        "--max-concurrent",
+        type=int,
+        default=None,
+        help="Override MAX_CONCURRENT_PRODUCTS for this run",
     )
 
     args = parser.parse_args()
@@ -34,6 +47,8 @@ def main() -> None:
         site=args.site,
         limit=args.limit,
         round_robin=args.round_robin,
+        parallel=args.parallel,
+        max_concurrent=args.max_concurrent,
     )
 
 
