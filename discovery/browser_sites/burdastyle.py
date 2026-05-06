@@ -59,6 +59,12 @@ async def run(browser: Browser, spec: dict) -> list[str]:
         all_links: list[str] = []
         seen = set()
         stagnant_rounds = 0
+        await safe_goto(page, "https://burdastyle.ru", primary_wait_until="domcontentloaded", fallback_wait_until="commit")
+        await wait_ms(page, 1600)
+        await safe_goto(page, "https://burdastyle.ru/vikroyki", primary_wait_until="domcontentloaded",
+                        fallback_wait_until="commit")
+        await wait_ms(page, 1600)
+
 
         for page_num in range(page_from, page_to + 1):
             page_url = _build_page_url(start_url, page_num)

@@ -30,6 +30,7 @@ VPN_SITES = {
     "etsy",
     "marfy",
     # "vikisews", если потом понадобится
+    "burdastyle",
 }
 
 ETSY_QUERY_MAP = {
