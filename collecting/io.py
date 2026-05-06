@@ -141,10 +141,25 @@ def get_product_dir(collected_dir: Path, product: CollectedProduct) -> Path:
     return collected_dir / product.site / product.category / product_id
 
 
+def product_to_metadata(product: CollectedProduct) -> dict:
+    return {
+        "url": product.url,
+        "site": product.site,
+        "category": product.category,
+        "source_page": product.source_page,
+        "title": product.title,
+        "description": product.description,
+        "similar_patterns": product.similar_patterns,
+        "collection": product.collection,
+        "season": product.season,
+        "style": product.style,
+    }
+
+
 def save_product(collected_dir: Path, product: CollectedProduct) -> Path:
     product_dir = get_product_dir(collected_dir, product)
     metadata_path = product_dir / "metadata.json"
 
-    write_json(metadata_path, asdict(product))
+    write_json(metadata_path, product_to_metadata(product))
 
     return metadata_path

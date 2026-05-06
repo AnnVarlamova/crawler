@@ -98,11 +98,17 @@ async def process_one(record: LinkRecord, browser) -> None:
             product_dir = get_product_dir(COLLECTED_DIR, product)
             product = await download_images(product, product_dir)
 
-            metadata_path = save_product(COLLECTED_DIR, product)
-
             downloaded_images_count = len(
                 [image for image in product.images if image.local_path]
             )
+
+            if downloaded_images_count == 0:
+                raise RuntimeError(
+                    f"No images downloaded for product: "
+                    f"site={record.site} category={record.category} url={record.url}"
+                )
+
+            metadata_path = save_product(COLLECTED_DIR, product)
 
             append_jsonl(
                 PROCESSED_FILE,

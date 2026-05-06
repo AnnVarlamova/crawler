@@ -31,19 +31,27 @@ PLAYWRIGHT_HEADLESS = os.getenv("PLAYWRIGHT_HEADLESS", "true").lower() == "true"
 PLAYWRIGHT_TIMEOUT_MS = int(os.getenv("PLAYWRIGHT_TIMEOUT_MS", "30000"))
 
 DOWNLOAD_TIMEOUT_SECONDS = int(os.getenv("DOWNLOAD_TIMEOUT_SECONDS", "30"))
+IMAGE_INDEX_FILE = DATASET_DIR / "images.jsonl"
+
 MAX_IMAGES_PER_PRODUCT = int(os.getenv("MAX_IMAGES_PER_PRODUCT", "30"))
+
+IMAGE_MAX_WIDTH = int(os.getenv("IMAGE_MAX_WIDTH", "1000"))
+IMAGE_MAX_HEIGHT = int(os.getenv("IMAGE_MAX_HEIGHT", "1500"))
+
+JPEG_QUALITY = int(os.getenv("JPEG_QUALITY", "88"))
+WEBP_QUALITY = int(os.getenv("WEBP_QUALITY", "88"))
 DEBUG_DIR = STATE_DIR / "debug_pages"
 
 RETRY_COUNT = int(os.getenv("RETRY_COUNT", "2"))
-MAX_CONCURRENT_PRODUCTS = int(os.getenv("MAX_CONCURRENT_PRODUCTS", "3"))
+MAX_CONCURRENT_PRODUCTS = int(os.getenv("MAX_CONCURRENT_PRODUCTS", "4"))
 MAX_PER_SITE = int(os.getenv("MAX_PER_SITE", "1"))
 
 SUPPORTED_SITES = {
     "burdastyle",
     "grasser",
     "helpersew",
-    "marfy",
+    #"marfy",
     "shkatulka",
-    "simplicity",
+    #"simplicity",
     "vikisews",
 }

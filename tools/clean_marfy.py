@@ -7,7 +7,7 @@ from pathlib import Path
 BAD_PART = "the-marfy-hand-made-pre-cut-sewing-pattern"
 
 INPUT_FILE = Path(
-    r"D:\diplom\crowler\dataset\links\marfy\the-marfy-hand-made-pre-cut-sewing-pattern\products.jsonl"
+    r"C:\Users\ann\YandexDisk\dataset\links\marfy\the-marfy-hand-made-pre-cut-sewing-pattern\products.jsonl"
 )
 
 
