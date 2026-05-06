@@ -173,27 +173,36 @@ async def process_one(record: LinkRecord, browser) -> None:
 async def worker(
     *,
     worker_id: int,
-    queue: asyncio.Queue[LinkRecord],
+    total: int,
+    queue: asyncio.Queue[tuple[int, LinkRecord]],
     browser,
     site_locks: dict[str, asyncio.Semaphore],
 ) -> None:
+    worker_count = 0
+
     while True:
         try:
-            record = queue.get_nowait()
+            index, record = queue.get_nowait()
         except asyncio.QueueEmpty:
             logger.info("Worker %s finished: queue is empty", worker_id)
             return
+
+        worker_count += 1
 
         try:
             site_lock = site_locks[record.site]
 
             async with site_lock:
                 logger.info(
-                    "Worker %s processing site=%s url=%s",
+                    "[%s/%s] worker=%s worker_item=%s site=%s url=%s",
+                    index,
+                    total,
                     worker_id,
+                    worker_count,
                     record.site,
                     record.url,
                 )
+
                 await process_one(record, browser)
 
         finally:
@@ -256,10 +265,10 @@ async def run(
             MAX_PER_SITE,
         )
 
-        queue: asyncio.Queue[LinkRecord] = asyncio.Queue()
+        queue: asyncio.Queue[tuple[int, LinkRecord]] = asyncio.Queue()
 
-        for record in records:
-            queue.put_nowait(record)
+        for index, record in enumerate(records, start=1):
+            queue.put_nowait((index, record))
 
         site_locks: dict[str, asyncio.Semaphore] = defaultdict(
             lambda: asyncio.Semaphore(MAX_PER_SITE)
@@ -269,6 +278,7 @@ async def run(
             asyncio.create_task(
                 worker(
                     worker_id=i + 1,
+                    total=len(records),
                     queue=queue,
                     browser=browser,
                     site_locks=site_locks,
